@@ -152,8 +152,11 @@ This project—including all software, firmware, schematics, PCB layouts, and do
 
 Copyright (c) 2026 Joshua Felder (Chaos). All Rights Reserved.
 
-### Core Terms:
-*   **Open Access & Freedom:** Anyone is free to run, study, modify, and distribute this software and hardware design documentation.
-*   **Copyleft Protection:** If anyone modifies these files or builds a derivative project and distributes it (either as code or as physical hardware), they **must** make their modified source code and design layouts publicly available under the GPL-3.0.
-*   **Commercial Use:** Commercial manufacturing and distribution are permitted, provided the distributor complies fully with the open-source disclosure requirements of the GPL-3.0.
-*   **No Warranty:** This project is provided "as is" without any warranty of any kind.
+### Under these terms, anyone is free to:
+*   **Share:** Copy, distribute, and hand out the files or physical hardware boards (including bare PCBs or kits) for free.
+*   **Adapt:** Remix, transform, and build upon the design files for any personal or community project.
+
+### Under the following conditions:
+1.  **Attribution:** You must give appropriate credit to **Deterministic Chaos**, provide a link to the original repository, and indicate if any changes were made.
+2.  **Non-Commercial:** You **may not** use the material, code, or physical hardware designs for commercial purposes or financial monetization. This means no selling assembled units, charging for component kits, or retailing bare PCBs.
+3.  **ShareAlike:** If you remix, transform, or build upon these design files, you must distribute your contributions under the exact same CC BY-NC-SA 4.0 license terms.
