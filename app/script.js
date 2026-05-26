@@ -1,14 +1,190 @@
 // ===== STATE =====
 let port = null, writer = null;
 let currentTab = 'library';
+let currentLibraryView = (localStorage.getItem('lbd_library_view') === 'favorites') ? 'favorites' : 'overview';
 let selectedRemoteId = null;
 let logBarOpen = false;
 let logUnread = 0;
+let txHistory = JSON.parse(localStorage.getItem('lbd_history') || '[]'); // [{id,ts,label,addr,cmd,proto}]
 
 let library = JSON.parse(localStorage.getItem('lbd_library') || '[]');
 let nextId = parseInt(localStorage.getItem('lbd_nextid') || '1');
-function saveLib() { localStorage.setItem('lbd_library', JSON.stringify(library)); localStorage.setItem('lbd_nextid', String(nextId)); }
+let sidebarFolderOpen = JSON.parse(localStorage.getItem('lbd_sidebar_open') || '{}');
+let libraryFolderOpen = JSON.parse(localStorage.getItem('lbd_library_open') || '{}');
+let sidebarSearchQuery = '';
+let librarySearchQuery = '';
+let libraryCurrentFolderId = null;
+let libraryBackStack = [];
+if (!sidebarFolderOpen || typeof sidebarFolderOpen !== 'object' || Array.isArray(sidebarFolderOpen)) sidebarFolderOpen = {};
+if (!libraryFolderOpen || typeof libraryFolderOpen !== 'object' || Array.isArray(libraryFolderOpen)) libraryFolderOpen = {};
+
+function saveFolderOpenState() {
+  localStorage.setItem('lbd_sidebar_open', JSON.stringify(sidebarFolderOpen));
+  localStorage.setItem('lbd_library_open', JSON.stringify(libraryFolderOpen));
+}
+function folderOpenByMap(map, folder) {
+  const key = String(folder.id);
+  return Object.prototype.hasOwnProperty.call(map, key) ? !!map[key] : (folder.open !== false);
+}
+function setFolderOpenByMap(map, folderId, isOpen) {
+  map[String(folderId)] = !!isOpen;
+  saveFolderOpenState();
+}
+function pruneFolderOpenState() {
+  const ids = new Set(library.filter(x => x.type === 'folder').map(x => String(x.id)));
+  Object.keys(sidebarFolderOpen).forEach(k => { if (!ids.has(k)) delete sidebarFolderOpen[k]; });
+  Object.keys(libraryFolderOpen).forEach(k => { if (!ids.has(k)) delete libraryFolderOpen[k]; });
+}
+function collapseAllFolders() {
+  library.forEach(item => {
+    if (item.type !== 'folder') return;
+    item.open = false;
+    sidebarFolderOpen[String(item.id)] = false;
+    libraryFolderOpen[String(item.id)] = false;
+  });
+  saveLib();
+  renderSidebarTree();
+  if (currentTab === 'library') renderLibraryPane();
+}
+function collapseLibraryPaneFolders() {
+  library.forEach(item => {
+    if (item.type !== 'folder') return;
+    item.open = false;
+    libraryFolderOpen[String(item.id)] = false;
+  });
+  libraryCurrentFolderId = null;
+  libraryBackStack = [];
+  saveLib();
+  if (currentTab === 'library' && selectedRemoteId == null) renderLibraryPane();
+}
+function saveLib() {
+  pruneFolderOpenState();
+  localStorage.setItem('lbd_library', JSON.stringify(library));
+  localStorage.setItem('lbd_nextid', String(nextId));
+  saveFolderOpenState();
+}
+function saveHistory() { localStorage.setItem('lbd_history', JSON.stringify(txHistory)); }
 function genId() { return nextId++; }
+function setLibraryView(view) {
+  currentLibraryView = (view === 'favorites') ? 'favorites' : 'overview';
+  localStorage.setItem('lbd_library_view', currentLibraryView);
+  if (currentLibraryView === 'favorites') selectedRemoteId = null;
+  syncLibraryViewTabs();
+  if (currentTab === 'library') renderLibraryPane();
+}
+function normalizeFolderId(folderId) {
+  if (folderId == null || folderId === '') return null;
+  const parsed = parseInt(folderId, 10);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+function getFolderById(folderId) {
+  const id = normalizeFolderId(folderId);
+  if (id == null) return null;
+  return library.find(x => x.type === 'folder' && x.id === id) || null;
+}
+function sanitizeLibraryNavigator() {
+  if (libraryCurrentFolderId != null && !getFolderById(libraryCurrentFolderId)) libraryCurrentFolderId = null;
+  libraryBackStack = libraryBackStack.filter(id => id == null || !!getFolderById(id));
+}
+function setSidebarSearch(query) {
+  sidebarSearchQuery = String(query || '');
+  renderSidebarTree();
+}
+function setLibrarySearch(query) {
+  librarySearchQuery = String(query || '');
+  if (currentTab === 'library' && currentLibraryView === 'overview' && selectedRemoteId == null) renderLibraryPane();
+}
+function getFolderTrail(folderId) {
+  const out = [];
+  let cur = getFolderById(folderId);
+  while (cur) {
+    out.unshift(cur);
+    cur = cur.parentId == null ? null : getFolderById(cur.parentId);
+  }
+  return out;
+}
+function openLibraryFolder(folderId, pushHistory=true) {
+  const targetId = normalizeFolderId(folderId);
+  if (targetId != null && !getFolderById(targetId)) return;
+  currentLibraryView = 'overview';
+  localStorage.setItem('lbd_library_view', currentLibraryView);
+  if (pushHistory && targetId !== libraryCurrentFolderId) libraryBackStack.push(libraryCurrentFolderId);
+  libraryCurrentFolderId = targetId;
+  selectedRemoteId = null;
+  if (currentTab === 'library') renderLibraryPane();
+  else switchTab('library');
+}
+function jumpToLibraryFolder(folderId) {
+  openLibraryFolder(folderId, true);
+}
+function goBackLibraryFolder() {
+  sanitizeLibraryNavigator();
+  currentLibraryView = 'overview';
+  localStorage.setItem('lbd_library_view', currentLibraryView);
+  if (libraryBackStack.length) {
+    libraryCurrentFolderId = libraryBackStack.pop();
+  } else {
+    const cur = getFolderById(libraryCurrentFolderId);
+    libraryCurrentFolderId = cur ? cur.parentId : null;
+  }
+  selectedRemoteId = null;
+  if (currentTab === 'library') renderLibraryPane();
+}
+function openRemoteInLibrary(remoteId) {
+  const remote = library.find(r => r.type === 'remote' && r.id === remoteId);
+  if (!remote) return;
+  currentLibraryView = 'overview';
+  localStorage.setItem('lbd_library_view', currentLibraryView);
+  libraryCurrentFolderId = remote.folderId == null ? null : remote.folderId;
+  selectedRemoteId = remote.id;
+  renderSidebarTree();
+  if (currentTab === 'library') renderLibraryPane();
+  else switchTab('library');
+}
+function syncLibraryViewTabs() {
+  const overview = document.getElementById('libraryView-overview');
+  const favorites = document.getElementById('libraryView-favorites');
+  if (!overview || !favorites) return;
+  overview.classList.toggle('active', currentLibraryView === 'overview');
+  favorites.classList.toggle('active', currentLibraryView === 'favorites');
+}
+function getUniqueFolderName(baseName, parentId=null) {
+  const base = String(baseName || 'Imported').trim() || 'Imported';
+  let name = base;
+  let n = 2;
+  while (library.some(x => x.type === 'folder' && x.parentId === parentId && x.name === name)) {
+    name = `${base} (${n})`;
+    n++;
+  }
+  return name;
+}
+function createFolderEntry(name, parentId=null, open=false) {
+  const folder = { type:'folder', id:genId(), name, parentId, open };
+  library.push(folder);
+  return folder;
+}
+function createImportFolder(baseName, parentId=null) {
+  return createFolderEntry(getUniqueFolderName(baseName, parentId), parentId, false);
+}
+function expandFolderInViews(folderId) {
+  let cur = library.find(x => x.type === 'folder' && x.id === folderId);
+  while (cur) {
+    sidebarFolderOpen[String(cur.id)] = true;
+    libraryFolderOpen[String(cur.id)] = true;
+    if (cur.parentId == null) break;
+    cur = library.find(x => x.type === 'folder' && x.id === cur.parentId);
+  }
+}
+function importStamp() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd} ${hh}-${mi}-${ss}`;
+}
 
 // ===== SERIAL =====
 async function toggleConnection() {
@@ -22,7 +198,6 @@ async function connect() {
     const te = new TextEncoderStream();
     te.readable.pipeTo(port.writable);
     writer = te.writable.getWriter();
-    // Show device name if available
     try {
       const info = port.getInfo();
       const name = info.usbProductName || (info.usbVendorId ? `VID:${info.usbVendorId.toString(16).padStart(4,'0')}` : null);
@@ -33,7 +208,7 @@ async function connect() {
     const btn = document.getElementById('connectBtn');
     btn.textContent = 'Disconnect'; btn.className = 'disconnect';
     appendLog('Serial connection established.', 'sys');
-    validateInputs();
+    validateInputs(); renderHistory();
     listenToStream();
   } catch(e) { appendLog('Connection failed: ' + e, 'err'); }
 }
@@ -64,8 +239,7 @@ function toggleLogBar() {
     logUnread = 0;
     const badge = document.getElementById('logBadge');
     badge.textContent = ''; badge.classList.remove('visible');
-    const term = document.getElementById('terminal');
-    setTimeout(() => term.scrollTop = term.scrollHeight, 10);
+    setTimeout(() => { const t=document.getElementById('terminal'); t.scrollTop=t.scrollHeight; }, 10);
   }
 }
 function clearConsole(e) {
@@ -128,7 +302,7 @@ function compileNEC(addr, cmd) {
   let af=flipByte(a), cf=flipByte(c);
   return [af,af^0xFF,cf,cf^0xFF].join(',');
 }
-async function transmitPayload(addrOvr, cmdOvr) {
+async function transmitPayload(addrOvr, cmdOvr, labelOvr) {
   if (!writer) return;
   const addr = addrOvr || document.getElementById('addressInput').value;
   const cmd  = cmdOvr  || document.getElementById('commandInput').value;
@@ -136,6 +310,51 @@ async function transmitPayload(addrOvr, cmdOvr) {
   const p = compileNEC(addr, cmd);
   appendLog(`TX [${p}]`, 'out');
   await writer.write(p + '\n');
+  // Add to history
+  const label = labelOvr || 'Manual';
+  addHistory({ label, addr, cmd });
+}
+function addHistory(entry) {
+  const item = { id: Date.now() + Math.random(), ts: new Date().toLocaleTimeString([], {hour12:false}), ...entry };
+  txHistory.unshift(item);
+  if (txHistory.length > 100) txHistory.pop();
+  saveHistory();
+  renderHistory();
+}
+function removeHistory(id) {
+  txHistory = txHistory.filter(h => h.id !== id);
+  saveHistory();
+  renderHistory();
+}
+function clearHistory() {
+  txHistory = []; saveHistory(); renderHistory();
+}
+function renderHistory() {
+  const el = document.getElementById('txHistory');
+  if (!el) return;
+  if (!txHistory.length) {
+    el.innerHTML = `<div class="empty-state" style="padding:30px 0;"><i class="ti ti-history" style="font-size:22px;"></i><p>No signals sent yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = '';
+  txHistory.forEach(h => {
+    const row = document.createElement('div');
+    row.className = 'hist-row';
+    row.innerHTML = `
+      <div class="hist-meta">
+        <span class="hist-ts">${h.ts}</span>
+        <span class="hist-label">${escHtml(h.label)}</span>
+      </div>
+      <div class="signal-meta" style="margin:4px 0 6px;">
+        <span class="signal-chip addr"><i class="ti ti-map-pin" style="font-size:9px;"></i> ${escHtml(h.addr)}</span>
+        <span class="signal-chip cmd"><i class="ti ti-terminal" style="font-size:9px;"></i> ${escHtml(h.cmd)}</span>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-green btn-sm" onclick="transmitPayload('${escAttr(h.addr)}','${escAttr(h.cmd)}','${escAttr(h.label)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Resend</button>
+        <button class="btn btn-sm btn-ghost" onclick="removeHistory(${h.id})" title="Remove from history"><i class="ti ti-x"></i></button>
+      </div>`;
+    el.appendChild(row);
+  });
 }
 
 // ===== TABS =====
@@ -145,8 +364,9 @@ function switchTab(tab) {
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
   });
   currentTab = tab;
-  if (tab === 'library') renderLibraryPane();
+  if (tab === 'library') { syncLibraryViewTabs(); renderLibraryPane(); }
   if (tab === 'irdb') initIRDB();
+  if (tab === 'transmit') { renderHistory(); validateInputs(); }
 }
 
 // ===== SAVE FORM =====
@@ -194,12 +414,12 @@ function saveManualSignal() {
     if (!validateSaveRemoteName()) return;
     const rname = document.getElementById('saveNewRemoteName').value.trim();
     const fid = document.getElementById('saveNewRemoteFolderSelect').value || null;
-    remote = { type:'remote', id:genId(), name:rname, folderId: fid ? parseInt(fid) : null, buttons:[] };
+    remote = { type:'remote', id:genId(), name:rname, folderId: fid ? parseInt(fid) : null, buttons:[], favorite:false };
     library.push(remote);
   } else {
     remote = library.find(r => r.id===parseInt(remSel));
   }
-  remote.buttons.push({ id:genId(), name, addr, cmd, desc, proto:'NEC' });
+  remote.buttons.push({ id:genId(), name, addr, cmd, desc, proto:'NEC', favorite:false });
   saveLib(); renderSidebarTree();
   document.getElementById('saveNameInput').value = '';
   document.getElementById('saveDescInput').value = '';
@@ -223,71 +443,147 @@ function parseIRFile(text) {
     else if (cur && l.startsWith('command:')) { cur.cmd  = l.slice(8).trim().split(/\s+/).slice(0,4).join(' '); }
   }
   if (cur && cur.addr && cur.cmd) buttons.push(cur);
-  return buttons.filter(b => validateHex(b.addr) && validateHex(b.cmd)).map(b => ({ ...b, id:genId(), desc:'' }));
+  return buttons.filter(b => validateHex(b.addr) && validateHex(b.cmd)).map(b => ({ ...b, id:genId(), desc:'', favorite:false }));
 }
 function importIRFiles(files, folderId=null, inputEl=null) {
-  Array.from(files).forEach(f => {
-    if (!f.name.endsWith('.ir')) return;
+  const irFiles = Array.from(files).filter(f => f.name.toLowerCase().endsWith('.ir'));
+  if (!irFiles.length) {
+    appendLog('No .ir files found to import.', 'sys');
+    if (inputEl) inputEl.value = '';
+    return;
+  }
+  const parentId = folderId ? parseInt(folderId) : null;
+  const singleName = irFiles[0].name.replace(/\.ir$/i, '').trim();
+  const folderBaseName = irFiles.length === 1 ? `${singleName} import` : `Import ${importStamp()}`;
+  const importRoot = createImportFolder(folderBaseName, parentId);
+  let pending = irFiles.length;
+  let imported = 0;
+  let skipped = 0;
+
+  const finalize = () => {
+    pending--;
+    if (pending > 0) return;
+    if (!imported) {
+      library = library.filter(x => x.id !== importRoot.id);
+      appendLog(`Import complete — 0 imported, ${skipped} skipped.`, 'sys');
+    } else {
+      appendLog(`Imported ${imported} remote${imported !== 1 ? 's' : ''} into "${importRoot.name}"${skipped ? ` (${skipped} skipped)` : ''}.`, 'sys');
+    }
+    saveLib();
+    renderSidebarTree();
+    if (currentTab === 'library' && selectedRemoteId == null) renderLibraryPane();
+  };
+
+  irFiles.forEach(f => {
     const reader = new FileReader();
     reader.onload = ev => {
       const rname = f.name.replace('.ir','');
       const buttons = parseIRFile(ev.target.result);
-      if (!buttons.length) { appendLog(`"${rname}" skipped — no valid NEC buttons.`,'sys'); return; }
-      library.push({ type:'remote', id:genId(), name:rname, folderId: folderId ? parseInt(folderId) : null, buttons });
-      saveLib(); renderSidebarTree();
-      appendLog(`Imported "${rname}" — ${buttons.length} buttons.`,'sys');
+      if (!buttons.length) {
+        skipped++;
+        appendLog(`"${rname}" skipped — no valid NEC buttons.`,'sys');
+        finalize();
+        return;
+      }
+      library.push({ type:'remote', id:genId(), name:rname, folderId: importRoot.id, buttons, favorite:false });
+      imported++;
+      finalize();
     };
+    reader.onerror = () => { skipped++; appendLog(`"${f.name}" failed to read.`, 'err'); finalize(); };
     reader.readAsText(f);
   });
   if (inputEl) inputEl.value = '';
 }
 function importFolder(files, inputEl=null) {
   if (!files.length) return;
-  const folderMap = {};
   const fileList = Array.from(files);
+  const topFolderName = fileList[0]?.webkitRelativePath?.split('/')[0] || 'Imported Folder';
+  const importRoot = createImportFolder(topFolderName, null);
+  const createdFolderIds = new Set([importRoot.id]);
+  const folderMap = { '': importRoot.id };
+  const irFiles = fileList.filter(f => f.name.toLowerCase().endsWith('.ir'));
+  if (!irFiles.length) {
+    library = library.filter(x => x.id !== importRoot.id);
+    appendLog(`"${topFolderName}" skipped — no .ir files found.`, 'sys');
+    if (inputEl) inputEl.value = '';
+    return;
+  }
+  // Build folder structure under a dedicated import root.
   fileList.forEach(f => {
-    const parts = f.webkitRelativePath.split('/');
-    for (let i = 0; i < parts.length-1; i++) {
-      const path = parts.slice(0,i+1).join('/');
-      if (!folderMap[path]) {
-        const parentPath = parts.slice(0,i).join('/');
-        const parentId = i===0 ? null : folderMap[parentPath]||null;
-        const fid = genId();
-        folderMap[path] = fid;
-        library.push({ type:'folder', id:fid, name:parts[i], parentId, open:false });
+    const fullParts = (f.webkitRelativePath || f.name).split('/').filter(Boolean);
+    const relParts = fullParts.length > 1 ? fullParts.slice(1) : fullParts;
+    let parentId = importRoot.id;
+    let pathKey = '';
+    for (let i = 0; i < relParts.length - 1; i++) {
+      const seg = relParts[i];
+      pathKey = pathKey ? `${pathKey}/${seg}` : seg;
+      if (!folderMap[pathKey]) {
+        const folder = createFolderEntry(seg, parentId, false);
+        folderMap[pathKey] = folder.id;
+        createdFolderIds.add(folder.id);
       }
+      parentId = folderMap[pathKey];
     }
   });
-  fileList.forEach(f => {
-    if (!f.name.endsWith('.ir')) return;
-    const parts = f.webkitRelativePath.split('/');
-    const folderPath = parts.slice(0,-1).join('/');
-    const folderId = folderMap[folderPath]||null;
+  let pending = irFiles.length;
+  let imported = 0;
+  let skipped = 0;
+  const finalize = () => {
+    pending--;
+    if (pending > 0) return;
+    if (!imported) {
+      library = library.filter(x => !(x.type === 'folder' && createdFolderIds.has(x.id)));
+      appendLog(`"${topFolderName}" imported 0 remotes (${skipped} skipped).`, 'sys');
+    } else {
+      appendLog(`Imported "${topFolderName}" into folder "${importRoot.name}" (${imported} remote${imported !== 1 ? 's' : ''}${skipped ? `, ${skipped} skipped` : ''}).`,'sys');
+    }
+    saveLib();
+    renderSidebarTree();
+    if (currentTab==='library' && selectedRemoteId == null) renderLibraryPane();
+  };
+  irFiles.forEach(f => {
+    const fullParts = (f.webkitRelativePath || f.name).split('/').filter(Boolean);
+    const relParts = fullParts.length > 1 ? fullParts.slice(1) : fullParts;
+    const folderPath = relParts.slice(0,-1).join('/');
+    const folderId = folderPath ? (folderMap[folderPath] || importRoot.id) : importRoot.id;
     const reader = new FileReader();
     reader.onload = ev => {
       const rname = f.name.replace('.ir','');
       const buttons = parseIRFile(ev.target.result);
-      if (!buttons.length) return;
-      library.push({ type:'remote', id:genId(), name:rname, folderId, buttons });
-      saveLib(); renderSidebarTree();
+      if (!buttons.length) { skipped++; finalize(); return; }
+      library.push({ type:'remote', id:genId(), name:rname, folderId, buttons, favorite:false });
+      imported++;
+      finalize();
     };
+    reader.onerror = () => { skipped++; finalize(); };
     reader.readAsText(f);
   });
-  appendLog(`Importing folder (${fileList.length} files)...`,'sys');
+  appendLog(`Importing "${topFolderName}" into "${importRoot.name}" (${irFiles.length} .ir file${irFiles.length !== 1 ? 's' : ''})...`,'sys');
   if (inputEl) inputEl.value = '';
 }
 
 // ===== DRAG AND DROP =====
-let dragItem = null; // { type: 'folder'|'remote', id }
+let dragItem = null;
 let dragOverId = null;
 
-function startDrag(e, type, id, label) {
+function startDrag(e, type, id, label=null) {
+  if (e.button !== 0) return;
+  e.stopPropagation();
+  if (!label) {
+    const item = library.find(x => x.type === type && x.id === id);
+    label = item ? item.name : `${type} ${id}`;
+  }
   dragItem = { type, id };
   const ghost = document.getElementById('dragGhost');
   ghost.textContent = label;
   ghost.style.display = 'block';
   moveDragGhost(e);
   document.getElementById('dragHint').classList.add('visible');
+  // Mark dragging item
+  document.querySelectorAll('.tree-item').forEach(el => {
+    const did = el.dataset.dragid;
+    if (did && parseInt(did) === id) el.classList.add('dragging');
+  });
   document.addEventListener('mousemove', onDragMove);
   document.addEventListener('mouseup', onDragEnd);
   e.preventDefault();
@@ -299,23 +595,35 @@ function moveDragGhost(e) {
 }
 function onDragMove(e) {
   moveDragGhost(e);
-  // Highlight drop target
+  // Highlight valid folder drop targets only
   const els = document.querySelectorAll('.tree-item[data-dropid]');
   let found = null;
   els.forEach(el => {
+    el.classList.remove('drag-over');
     const rect = el.getBoundingClientRect();
-    if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+    if (e.clientX >= rect.left && e.clientX <= rect.right &&
+        e.clientY >= rect.top  && e.clientY <= rect.bottom) {
       found = el;
     }
-    el.classList.remove('drag-over');
   });
-  if (found) { found.classList.add('drag-over'); dragOverId = found.dataset.dropid; }
-  else dragOverId = null;
+  // Only highlight folder targets (skip dropping a folder onto itself)
+  if (found) {
+    const tid = found.dataset.dropid;
+    // Don't highlight itself or its descendants
+    if (dragItem && dragItem.type === 'folder' && (parseInt(tid) === dragItem.id || isDescendant(parseInt(tid), dragItem.id))) {
+      dragOverId = null;
+    } else {
+      found.classList.add('drag-over');
+      dragOverId = tid;
+    }
+  } else {
+    dragOverId = null;
+  }
   // Root drop zone
   const hint = document.getElementById('dragHint');
   const hr = hint.getBoundingClientRect();
   if (e.clientX >= hr.left && e.clientX <= hr.right && e.clientY >= hr.top && e.clientY <= hr.bottom) {
-    hint.style.background = 'rgba(255,183,3,0.2)';
+    hint.style.background = 'rgba(255,183,3,0.22)';
     dragOverId = '__root__';
   } else {
     hint.style.background = '';
@@ -327,47 +635,52 @@ function onDragEnd(e) {
   document.getElementById('dragGhost').style.display = 'none';
   document.getElementById('dragHint').classList.remove('visible');
   document.getElementById('dragHint').style.background = '';
-  document.querySelectorAll('.tree-item[data-dropid]').forEach(el => el.classList.remove('drag-over'));
-
-  if (dragItem && dragOverId !== null) {
-    performDrop(dragItem, dragOverId);
-  }
+  document.querySelectorAll('.tree-item').forEach(el => { el.classList.remove('drag-over'); el.classList.remove('dragging'); });
+  if (dragItem && dragOverId !== null) performDrop(dragItem, dragOverId);
   dragItem = null; dragOverId = null;
 }
 function isDescendant(folderId, ancestorId) {
+  // Is folderId inside ancestorId?
   let cur = library.find(x => x.id===folderId && x.type==='folder');
-  while (cur) {
-    if (cur.id === ancestorId) return true;
-    cur = cur.parentId ? library.find(x => x.id===cur.parentId) : null;
+  while (cur && cur.parentId != null) {
+    if (cur.parentId === ancestorId) return true;
+    cur = library.find(x => x.id===cur.parentId && x.type==='folder');
   }
   return false;
 }
 function performDrop(drag, targetId) {
+  let expandedTargetId = null;
   if (drag.type === 'folder') {
     const folder = library.find(x => x.type==='folder' && x.id===drag.id);
     if (!folder) return;
     if (targetId === '__root__') {
+      if (folder.parentId === null) return; // already root
       folder.parentId = null;
     } else {
       const tid = parseInt(targetId);
-      // Can't drop folder into itself or its own descendant
       if (tid === folder.id || isDescendant(tid, folder.id)) return;
+      if (folder.parentId === tid) return; // already there
       const target = library.find(x => x.type==='folder' && x.id===tid);
       if (!target) return;
       folder.parentId = tid;
+      expandedTargetId = tid;
     }
   } else if (drag.type === 'remote') {
     const remote = library.find(x => x.type==='remote' && x.id===drag.id);
     if (!remote) return;
     if (targetId === '__root__') {
+      if (remote.folderId === null) return;
       remote.folderId = null;
     } else {
       const tid = parseInt(targetId);
+      if (remote.folderId === tid) return;
       const target = library.find(x => x.type==='folder' && x.id===tid);
       if (!target) return;
       remote.folderId = tid;
+      expandedTargetId = tid;
     }
   }
+  if (expandedTargetId !== null) expandFolderInViews(expandedTargetId);
   saveLib(); renderSidebarTree();
   if (currentTab === 'library') renderLibraryPane();
 }
@@ -375,20 +688,43 @@ function performDrop(drag, targetId) {
 // ===== SIDEBAR TREE =====
 function renderSidebarTree() {
   const el = document.getElementById('sidebarTree');
+  if (!el) return;
+  const searchEl = document.getElementById('sidebarSearch');
+  if (searchEl && searchEl.value !== sidebarSearchQuery) searchEl.value = sidebarSearchQuery;
+  const query = sidebarSearchQuery.trim().toLowerCase();
   el.innerHTML = '';
-  renderTreeLevel(el, null, 0);
+  renderTreeLevel(el, null, 0, query);
 }
-function renderTreeLevel(container, parentId, depth) {
-  const folders = library.filter(x => x.type==='folder' && x.parentId===parentId);
-  const remotes = library.filter(x => x.type==='remote' && x.folderId===parentId);
+function sidebarRemoteMatchesQuery(remote, query) {
+  if (!query) return true;
+  return String(remote.name || '').toLowerCase().includes(query);
+}
+function sidebarFolderMatchesQuery(folder, query) {
+  if (!query) return true;
+  if (String(folder.name || '').toLowerCase().includes(query)) return true;
+  if (library.some(x => x.type === 'remote' && x.folderId === folder.id && sidebarRemoteMatchesQuery(x, query))) return true;
+  return library
+    .filter(x => x.type === 'folder' && x.parentId === folder.id)
+    .some(child => sidebarFolderMatchesQuery(child, query));
+}
+function renderTreeLevel(container, parentId, depth, query='') {
+  const folders = library
+    .filter(x => x.type==='folder' && x.parentId===parentId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const remotes = library
+    .filter(x => x.type==='remote' && x.folderId===parentId)
+    .sort((a, b) => a.name.localeCompare(b.name));
   folders.forEach(folder => {
+    if (query && !sidebarFolderMatchesQuery(folder, query)) return;
     const row = document.createElement('div');
     row.className = 'tree-item';
     row.style.paddingLeft = (8 + depth*14) + 'px';
-    row.dataset.dropid = folder.id;
-    const isOpen = folder.open !== false;
+    row.dataset.dropid = folder.id;   // valid drop target
+    row.dataset.dragid = folder.id;   // for styling dragging item
+    const isSearchMode = !!query;
+    const isOpen = isSearchMode ? true : folderOpenByMap(sidebarFolderOpen, folder);
     row.innerHTML = `
-      <i class="ti ti-grip-vertical drag-handle" title="Drag to move" onmousedown="startDrag(event,'folder',${folder.id},${JSON.stringify(folder.name)})"></i>
+      <i class="ti ti-grip-vertical drag-handle" title="Drag to move" onmousedown="startDrag(event,'folder',${folder.id})"></i>
       <i class="ti ti-chevron-right ${isOpen?'open':''}"></i>
       <i class="ti ${isOpen?'ti-folder-open':'ti-folder'}"></i>
       <span class="tree-label">${escHtml(folder.name)}</span>
@@ -399,18 +735,24 @@ function renderTreeLevel(container, parentId, depth) {
       </span>`;
     row.addEventListener('click', e => {
       if (e.target.closest('.tree-actions') || e.target.closest('.drag-handle')) return;
-      folder.open = !folder.open; saveLib(); renderSidebarTree();
+      if (isSearchMode) {
+        openLibraryFolder(folder.id, true);
+        return;
+      }
+      setFolderOpenByMap(sidebarFolderOpen, folder.id, !isOpen);
+      renderSidebarTree();
     });
     container.appendChild(row);
-    if (isOpen) renderTreeLevel(container, folder.id, depth+1);
+    if (isOpen) renderTreeLevel(container, folder.id, depth+1, query);
   });
-  remotes.forEach(remote => {
+  remotes.filter(remote => sidebarRemoteMatchesQuery(remote, query)).forEach(remote => {
     const row = document.createElement('div');
     row.className = 'tree-item' + (selectedRemoteId===remote.id ? ' active' : '');
     row.style.paddingLeft = (8 + depth*14 + 14) + 'px';
+    row.dataset.dragid = remote.id;
     row.innerHTML = `
-      <i class="ti ti-grip-vertical drag-handle" title="Drag to move" onmousedown="startDrag(event,'remote',${remote.id},${JSON.stringify(remote.name)})"></i>
-      <i class="ti ti-device-remote-control"></i>
+      <i class="ti ti-grip-vertical drag-handle" title="Drag to move" onmousedown="startDrag(event,'remote',${remote.id})"></i>
+      <i class="ti ti-device-remote"></i>
       <span class="tree-label">${escHtml(remote.name)}</span>
       <span class="tree-actions">
         <button class="tree-act" title="Rename" onclick="openRenameModal(event,'remote',${remote.id})"><i class="ti ti-pencil"></i></button>
@@ -418,7 +760,7 @@ function renderTreeLevel(container, parentId, depth) {
       </span>`;
     row.addEventListener('click', e => {
       if (e.target.closest('.tree-actions') || e.target.closest('.drag-handle')) return;
-      selectedRemoteId=remote.id; renderSidebarTree(); switchTab('library');
+      openRemoteInLibrary(remote.id);
     });
     container.appendChild(row);
   });
@@ -426,53 +768,268 @@ function renderTreeLevel(container, parentId, depth) {
 
 // ===== LIBRARY PANE =====
 function renderLibraryPane() {
+  sanitizeLibraryNavigator();
   const el = document.getElementById('libraryContent');
+  const searchWrap = document.getElementById('librarySearchWrap');
+  const searchInput = document.getElementById('librarySearch');
+  if (searchInput && searchInput.value !== librarySearchQuery) searchInput.value = librarySearchQuery;
+  syncLibraryViewTabs();
   if (selectedRemoteId != null) {
+    if (searchWrap) searchWrap.style.display = 'none';
     const remote = library.find(r => r.id===selectedRemoteId);
     if (remote) { renderRemoteView(el, remote); return; }
     selectedRemoteId = null;
   }
+  if (currentLibraryView === 'favorites') {
+    if (searchWrap) searchWrap.style.display = 'none';
+    renderFavoritesView(el);
+    return;
+  }
+  if (searchWrap) searchWrap.style.display = '';
   renderLibraryOverview(el);
 }
-function renderLibraryOverview(el) {
+function getFavoriteButtons() {
+  const out = [];
+  library.filter(x => x.type === 'remote').forEach(remote => {
+    (remote.buttons || []).forEach(btn => {
+      if (btn && btn.favorite) out.push({ remote, btn });
+    });
+  });
+  return out;
+}
+function getFavoriteRemotes() {
+  return library.filter(x => x.type === 'remote' && !!x.favorite);
+}
+function clearAllFavorites() {
+  library.filter(x => x.type === 'remote').forEach(remote => {
+    remote.favorite = false;
+    (remote.buttons || []).forEach(btn => { btn.favorite = false; });
+  });
+  saveLib();
+  if (currentTab === 'library') renderLibraryPane();
+  appendLog('All favorites cleared.', 'sys');
+}
+function openClearFavoritesModal() {
+  document.getElementById('clearFavoritesModal').classList.add('open');
+}
+function closeClearFavoritesModal() {
+  document.getElementById('clearFavoritesModal').classList.remove('open');
+}
+function confirmClearFavorites() {
+  clearAllFavorites();
+  closeClearFavoritesModal();
+}
+function renderFavoritesView(el) {
+  const favRemotes = getFavoriteRemotes();
+  const favs = getFavoriteButtons();
+  const totalFavs = favRemotes.length + favs.length;
   el.innerHTML = '';
-  if (!library.length) {
+  const hdr = document.createElement('div');
+  hdr.className = 'section-hdr';
+  hdr.innerHTML = `
+    <span class="section-title"><i class="ti ti-star-filled" style="vertical-align:-2px;margin-right:6px;"></i>Favorites</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="favorites-meta">${favRemotes.length} remote${favRemotes.length!==1?'s':''} · ${favs.length} signal${favs.length!==1?'s':''}</span>
+      <button class="btn btn-sm btn-ghost" onclick="openClearFavoritesModal()" ${totalFavs ? '' : 'disabled'}><i class="ti ti-eraser"></i> Clear Favorites</button>
+    </div>`;
+  el.appendChild(hdr);
+  if (!totalFavs) {
+    el.innerHTML += `<div class="empty-state"><i class="ti ti-star-off"></i><p>No favorites yet.<br>Open a remote and star remotes or buttons.</p></div>`;
+    return;
+  }
+  if (favRemotes.length) {
+    const rs = document.createElement('div');
+    rs.className = 'section-hdr';
+    rs.innerHTML = `<span class="section-title"><i class="ti ti-device-remote" style="vertical-align:-2px;margin-right:6px;"></i>Favorite Remotes</span>`;
+    rs.style.marginTop = '4px';
+    el.appendChild(rs);
+    favRemotes.forEach(remote => appendRemoteCard(el, remote));
+  }
+  if (favs.length) {
+    const ss = document.createElement('div');
+    ss.className = 'section-hdr';
+    ss.innerHTML = `<span class="section-title"><i class="ti ti-stars" style="vertical-align:-2px;margin-right:6px;"></i>Favorite Signals</span>`;
+    ss.style.marginTop = '4px';
+    el.appendChild(ss);
+  }
+  favs.forEach(({ remote, btn }) => {
+    const folderPath = remote.folderId ? getFolderPath(remote.folderId) : '/ Root';
+    const row = document.createElement('div');
+    row.className = 'signal-box';
+    row.innerHTML = `
+      <div class="signal-box-header">
+        <span class="signal-box-name">${escHtml(btn.name)}</span>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Remove from favorites" onclick="toggleFavoriteButton(${btn.id},${remote.id},event)" style="color:var(--accent2);"><i class="ti ti-star-filled"></i></button>
+      </div>
+      <div class="signal-meta">
+        <span class="signal-chip proto"><i class="ti ti-device-remote" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(remote.name)}</span>
+        <span class="signal-chip"><i class="ti ti-folders" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(folderPath)}</span>
+      </div>
+      <div class="signal-meta">
+        <span class="signal-chip addr"><i class="ti ti-map-pin" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.addr||'—')}</span>
+        <span class="signal-chip cmd"><i class="ti ti-terminal" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.cmd||'—')}</span>
+      </div>
+      ${btn.desc ? `<div class="signal-desc-view" style="cursor:default;">${escHtml(btn.desc)}</div>` : ''}
+      <div class="signal-actions">
+        <button class="btn btn-sm" onclick="openFavoriteRemote(${remote.id})"><i class="ti ti-arrow-right"></i> Open Remote</button>
+        <button class="btn btn-green btn-sm" onclick="sendButtonSignal('${escAttr(btn.addr)}','${escAttr(btn.cmd)}','${escAttr(remote.name+' / '+btn.name)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Send</button>
+      </div>`;
+    el.appendChild(row);
+  });
+}
+function openFavoriteRemote(remoteId) {
+  openRemoteInLibrary(remoteId);
+}
+function renderLibraryOverview(el) {
+  sanitizeLibraryNavigator();
+  const currentFolder = getFolderById(libraryCurrentFolderId);
+  if (libraryCurrentFolderId != null && !currentFolder) libraryCurrentFolderId = null;
+  const activeFolderId = currentFolder ? currentFolder.id : null;
+  const query = librarySearchQuery.trim().toLowerCase();
+  const childFolders = library
+    .filter(x => x.type === 'folder' && x.parentId === activeFolderId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const childRemotes = library
+    .filter(x => x.type === 'remote' && x.folderId === activeFolderId)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const visibleFolders = query ? childFolders.filter(f => String(f.name || '').toLowerCase().includes(query)) : childFolders;
+  const visibleRemotes = query ? childRemotes.filter(r => remoteMatchesLibraryQuery(r, query)) : childRemotes;
+
+  el.innerHTML = '';
+  if (!library.some(x => x.type === 'folder' || x.type === 'remote')) {
     el.innerHTML = `<div class="empty-state"><i class="ti ti-satellite"></i><p>No remotes yet.<br>Import .ir files or save signals from the Transmit tab.</p></div>`;
     return;
   }
-  library.filter(x => x.type==='folder' && x.parentId===null).forEach(f => renderFolderSection(el, f));
-  library.filter(x => x.type==='remote' && x.folderId===null).forEach(r => appendRemoteCard(el, r));
-}
-function renderFolderSection(container, folder) {
-  const sec = document.createElement('div');
-  sec.className = 'folder-section';
-  const hdr = document.createElement('div');
-  hdr.className = 'folder-section-hdr';
-  const isOpen = folder.open !== false;
-  hdr.innerHTML = `<i class="ti ${isOpen?'ti-chevron-down':'ti-chevron-right'}" style="font-size:11px;color:var(--text3);flex-shrink:0;"></i><i class="ti ti-folder" style="color:var(--text3);font-size:13px;flex-shrink:0;"></i><span class="folder-section-name">${escHtml(folder.name)}</span>`;
-  hdr.onclick = () => { folder.open = !folder.open; saveLib(); renderLibraryPane(); };
-  sec.appendChild(hdr);
-  if (isOpen) {
-    library.filter(x => x.type==='remote' && x.folderId===folder.id).forEach(r => appendRemoteCard(sec, r));
-    library.filter(x => x.type==='folder' && x.parentId===folder.id).forEach(f => renderFolderSection(sec, f));
+  const toolbar = document.createElement('div');
+  toolbar.className = 'library-browser-toolbar';
+
+  const left = document.createElement('div');
+  left.className = 'library-browser-left';
+  const canBack = libraryBackStack.length > 0 || (currentFolder && currentFolder.parentId != null);
+  left.innerHTML = `<button class="btn btn-sm btn-ghost" onclick="goBackLibraryFolder()" ${canBack ? '' : 'disabled'}><i class="ti ti-arrow-left"></i> Back</button>`;
+  const path = document.createElement('div');
+  path.className = 'library-path';
+  buildLibraryPath(path, activeFolderId);
+  left.appendChild(path);
+  toolbar.appendChild(left);
+
+  const right = document.createElement('div');
+  right.className = 'library-browser-right';
+  right.innerHTML = `<button class="btn btn-sm btn-ghost" onclick="collapseLibraryPaneFolders()"><i class="ti ti-folders"></i> Close All</button>`;
+  toolbar.appendChild(right);
+  el.appendChild(toolbar);
+
+  if (query) {
+    const meta = document.createElement('div');
+    meta.className = 'favorites-meta';
+    meta.style.marginBottom = '10px';
+    meta.textContent = `Filtered by "${librarySearchQuery}"`;
+    el.appendChild(meta);
   }
-  container.appendChild(sec);
+
+  const grid = document.createElement('div');
+  grid.className = 'library-grid';
+  visibleFolders.forEach(folder => appendLibraryFolderCard(grid, folder));
+  visibleRemotes.forEach(remote => appendLibraryRemoteCard(grid, remote));
+  if (!visibleFolders.length && !visibleRemotes.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.style.gridColumn = '1 / -1';
+    empty.innerHTML = query
+      ? `<i class="ti ti-search-off"></i><p>No matches in this folder.</p>`
+      : `<i class="ti ti-folder-off"></i><p>This folder is empty.</p>`;
+    grid.appendChild(empty);
+  }
+  el.appendChild(grid);
 }
-function appendRemoteCard(container, remote) {
+function remoteMatchesLibraryQuery(remote, query) {
+  if (!query) return true;
+  if (String(remote.name || '').toLowerCase().includes(query)) return true;
+  return (remote.buttons || []).some(btn => {
+    const name = String(btn.name || '').toLowerCase();
+    const desc = String(btn.desc || '').toLowerCase();
+    return name.includes(query) || desc.includes(query);
+  });
+}
+function buildLibraryPath(container, folderId) {
+  const trail = getFolderTrail(folderId);
+  if (!trail.length) {
+    container.innerHTML = `<span class="cur">Library</span>`;
+    return;
+  }
+  const root = document.createElement('a');
+  root.textContent = 'Library';
+  root.onclick = () => jumpToLibraryFolder(null);
+  container.appendChild(root);
+  trail.forEach((folder, idx) => {
+    const sep = document.createElement('span');
+    sep.className = 'sep';
+    sep.textContent = '/';
+    container.appendChild(sep);
+    if (idx === trail.length - 1) {
+      const cur = document.createElement('span');
+      cur.className = 'cur';
+      cur.textContent = folder.name;
+      container.appendChild(cur);
+    } else {
+      const link = document.createElement('a');
+      link.textContent = folder.name;
+      link.onclick = () => jumpToLibraryFolder(folder.id);
+      container.appendChild(link);
+    }
+  });
+}
+function countFolderItems(folderId) {
+  const subFolders = library.filter(x => x.type === 'folder' && x.parentId === folderId).length;
+  const remotes = library.filter(x => x.type === 'remote' && x.folderId === folderId).length;
+  return subFolders + remotes;
+}
+function appendLibraryFolderCard(container, folder) {
+  const totalItems = countFolderItems(folder.id);
   const card = document.createElement('div');
-  card.className = 'remote-card';
+  card.className = 'library-entry-card library-folder-card';
+  card.innerHTML = `
+    <div class="library-entry-top">
+      <div class="library-entry-main">
+        <i class="ti ti-folder"></i>
+        <span class="library-entry-name">${escHtml(folder.name)}</span>
+      </div>
+      <div class="library-entry-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" title="Rename folder" onclick="openRenameModal(event,'folder',${folder.id})"><i class="ti ti-pencil"></i></button>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Delete folder" onclick="openDeleteModal(event,'folder',${folder.id})"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>
+    <div class="library-entry-meta">${totalItems} item${totalItems !== 1 ? 's' : ''}</div>`;
+  card.onclick = () => openLibraryFolder(folder.id, true);
+  container.appendChild(card);
+}
+function appendRemoteCard(container, remote, showMainActions=false) {
+  const isFav = !!remote.favorite;
+  const card = document.createElement('div');
+  card.className = showMainActions ? 'remote-card remote-card-grid' : 'remote-card';
+  const actionButtons = showMainActions
+    ? `
+      <button class="btn btn-ghost btn-sm btn-icon" title="${isFav ? 'Remove remote from favorites' : 'Add remote to favorites'}" onclick="toggleFavoriteRemote(${remote.id},event)" style="color:${isFav ? 'var(--accent2)' : 'var(--text3)'}"><i class="ti ${isFav ? 'ti-star-filled' : 'ti-star'}"></i></button>
+      <button class="btn btn-ghost btn-sm btn-icon" title="Rename remote" onclick="openRenameModal(event,'remote',${remote.id})"><i class="ti ti-pencil"></i></button>
+      <button class="btn btn-ghost btn-sm btn-icon" title="Delete remote" onclick="openDeleteModal(event,'remote',${remote.id})"><i class="ti ti-trash"></i></button>`
+    : `
+      <button class="btn btn-ghost btn-sm btn-icon" title="${isFav ? 'Remove remote from favorites' : 'Add remote to favorites'}" onclick="toggleFavoriteRemote(${remote.id},event)" style="color:${isFav ? 'var(--accent2)' : 'var(--text3)'}"><i class="ti ${isFav ? 'ti-star-filled' : 'ti-star'}"></i></button>`;
   card.innerHTML = `
     <div class="remote-card-hdr">
-      <i class="ti ti-device-remote-control" style="color:var(--accent2);font-size:15px;flex-shrink:0;"></i>
+      <i class="ti ti-device-remote" style="color:var(--accent2);font-size:15px;flex-shrink:0;"></i>
       <span class="remote-card-name">${escHtml(remote.name)}</span>
+      ${actionButtons}
       <span class="remote-card-count">${remote.buttons.length} btn${remote.buttons.length!==1?'s':''}</span>
     </div>
     <div class="chip-row">
       ${remote.buttons.slice(0,10).map(b=>`<span class="signal-chip">${escHtml(b.name)}</span>`).join('')}
       ${remote.buttons.length>10 ? `<span class="signal-chip" style="color:var(--text3);">+${remote.buttons.length-10}</span>` : ''}
     </div>`;
-  card.onclick = () => { selectedRemoteId=remote.id; renderSidebarTree(); renderLibraryPane(); };
+  card.onclick = () => openRemoteInLibrary(remote.id);
   container.appendChild(card);
+}
+function appendLibraryRemoteCard(container, remote) {
+  appendRemoteCard(container, remote, true);
 }
 
 // ===== REMOTE VIEW =====
@@ -480,16 +1037,42 @@ function renderRemoteView(el, remote) {
   el.innerHTML = '';
   const bc = document.createElement('div');
   bc.className = 'breadcrumb';
-  const folder = remote.folderId ? library.find(f => f.id===remote.folderId) : null;
-  bc.innerHTML = `<a onclick="selectedRemoteId=null;renderLibraryPane();">Library</a><span class="sep">/</span>`;
-  if (folder) bc.innerHTML += `<a onclick="selectedRemoteId=null;renderLibraryPane();">${escHtml(folder.name)}</a><span class="sep">/</span>`;
-  bc.innerHTML += `<span class="cur">${escHtml(remote.name)}</span>`;
+  const trail = getFolderTrail(remote.folderId);
+  const rootLink = document.createElement('a');
+  rootLink.textContent = 'Library';
+  rootLink.onclick = () => {
+    selectedRemoteId = null;
+    jumpToLibraryFolder(null);
+  };
+  bc.appendChild(rootLink);
+  trail.forEach(folder => {
+    const sep = document.createElement('span');
+    sep.className = 'sep';
+    sep.textContent = '/';
+    bc.appendChild(sep);
+    const link = document.createElement('a');
+    link.textContent = folder.name;
+    link.onclick = () => {
+      selectedRemoteId = null;
+      jumpToLibraryFolder(folder.id);
+    };
+    bc.appendChild(link);
+  });
+  const endSep = document.createElement('span');
+  endSep.className = 'sep';
+  endSep.textContent = '/';
+  bc.appendChild(endSep);
+  const cur = document.createElement('span');
+  cur.className = 'cur';
+  cur.textContent = remote.name;
+  bc.appendChild(cur);
   el.appendChild(bc);
   const hdr = document.createElement('div');
   hdr.className = 'section-hdr';
   hdr.innerHTML = `
-    <span class="section-title"><i class="ti ti-device-remote-control" style="vertical-align:-2px;margin-right:6px;"></i>${escHtml(remote.name)}</span>
+    <span class="section-title"><i class="ti ti-device-remote" style="vertical-align:-2px;margin-right:6px;"></i>${escHtml(remote.name)}</span>
     <div style="display:flex;gap:6px;">
+      <button class="btn btn-sm ${remote.favorite ? 'btn-green' : ''}" title="${remote.favorite ? 'Unfavorite Remote' : 'Favorite Remote'}" onclick="toggleFavoriteRemote(${remote.id},event)"><i class="ti ${remote.favorite ? 'ti-star-filled' : 'ti-star'}"></i></button>
       <button class="btn btn-sm" onclick="openRenameModal(event,'remote',${remote.id})"><i class="ti ti-pencil"></i></button>
       <button class="btn btn-sm" onclick="showAddButtonBox(${remote.id})"><i class="ti ti-plus"></i> Add Button</button>
       <button class="btn btn-sm btn-danger" onclick="openDeleteModal(event,'remote',${remote.id})"><i class="ti ti-trash"></i></button>
@@ -507,12 +1090,16 @@ function renderRemoteView(el, remote) {
   }
 }
 function buildSignalBox(btn, remoteId) {
+  const remoteObj = library.find(r => r.id===remoteId);
+  const remName = remoteObj ? remoteObj.name : '';
+  const isFav = !!btn.favorite;
   const box = document.createElement('div');
   box.className = 'signal-box';
   box.id = 'sigbox-' + btn.id;
   box.innerHTML = `
     <div class="signal-box-header">
       <span class="signal-box-name" id="sname-${btn.id}">${escHtml(btn.name)}</span>
+      <button class="btn btn-ghost btn-sm btn-icon" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}" onclick="toggleFavoriteButton(${btn.id},${remoteId},event)" style="color:${isFav ? 'var(--accent2)' : 'var(--text3)'}"><i class="ti ${isFav ? 'ti-star-filled' : 'ti-star'}"></i></button>
       <button class="btn btn-ghost btn-sm btn-icon" title="Rename" onclick="toggleEditName(${btn.id},${remoteId})"><i class="ti ti-pencil"></i></button>
       <button class="btn btn-ghost btn-sm btn-icon" title="Delete" onclick="deleteButton(${btn.id},${remoteId})" style="color:var(--text3);" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--text3)'"><i class="ti ti-trash"></i></button>
     </div>
@@ -540,7 +1127,7 @@ function buildSignalBox(btn, remoteId) {
       </div>
     </div>
     <div class="signal-actions">
-      <button class="btn btn-green btn-sm" onclick="sendButtonSignal('${escAttr(btn.addr)}','${escAttr(btn.cmd)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Send</button>
+      <button class="btn btn-green btn-sm" onclick="sendButtonSignal('${escAttr(btn.addr)}','${escAttr(btn.cmd)}','${escAttr(remName+' / '+btn.name)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Send</button>
     </div>`;
   return box;
 }
@@ -600,7 +1187,7 @@ function confirmAddButton(remoteId) {
   const desc = document.getElementById('abn-desc-'+remoteId).value.trim();
   if (!name||!validateHex(addr)||!validateHex(cmd)) return;
   const remote = library.find(r => r.id===remoteId);
-  const newBtn = { id:genId(), name, addr, cmd, desc, proto:'NEC' };
+  const newBtn = { id:genId(), name, addr, cmd, desc, proto:'NEC', favorite:false };
   remote.buttons.push(newBtn);
   saveLib();
   document.getElementById('remote-empty-'+remoteId)?.remove();
@@ -610,6 +1197,24 @@ function confirmAddButton(remoteId) {
 }
 
 // ===== INLINE EDITS =====
+function toggleFavoriteRemote(remoteId, e) {
+  if (e) e.stopPropagation();
+  const remote = library.find(r => r.id===remoteId && r.type==='remote');
+  if (!remote) return;
+  remote.favorite = !remote.favorite;
+  saveLib();
+  if (currentTab === 'library') renderLibraryPane();
+}
+function toggleFavoriteButton(btnId, remoteId, e) {
+  if (e) e.stopPropagation();
+  const remote = library.find(r => r.id===remoteId);
+  if (!remote) return;
+  const btn = (remote.buttons || []).find(b => b.id===btnId);
+  if (!btn) return;
+  btn.favorite = !btn.favorite;
+  saveLib();
+  if (currentTab === 'library') renderLibraryPane();
+}
 function toggleEditName(btnId, remoteId) {
   const edit = document.getElementById('sname-edit-'+btnId);
   edit.style.display = edit.style.display==='none' ? 'block' : 'none';
@@ -648,11 +1253,12 @@ function deleteButton(btnId, remoteId) {
   if (!confirm('Delete this button?')) return;
   library.find(r=>r.id===remoteId).buttons = library.find(r=>r.id===remoteId).buttons.filter(b=>b.id!==btnId);
   saveLib();
-  document.getElementById('sigbox-'+btnId)?.remove();
+  if (currentTab === 'library') renderLibraryPane();
+  else document.getElementById('sigbox-'+btnId)?.remove();
 }
-function sendButtonSignal(addr, cmd) {
+function sendButtonSignal(addr, cmd, label) {
   if (!writer) { appendLog('Not connected — cannot send.','err'); return; }
-  transmitPayload(addr, cmd);
+  transmitPayload(addr, cmd, label||'Button');
 }
 
 // ===== MODALS =====
@@ -717,6 +1323,7 @@ function openDeleteModal(e, type, id) {
 function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('open'); }
 function confirmDelete() {
   if (_deleteType==='folder') deleteFolder(_deleteId); else deleteRemote(_deleteId);
+  sanitizeLibraryNavigator();
   saveLib(); closeDeleteModal(); renderSidebarTree();
   if (currentTab==='library') { if (_deleteType==='remote'&&selectedRemoteId===_deleteId) selectedRemoteId=null; renderLibraryPane(); }
 }
@@ -728,18 +1335,14 @@ function deleteFolder(id) {
 function deleteRemote(id) { library = library.filter(x=>x.id!==id); }
 
 function openClearLibraryModal() {
-  document.getElementById('clearConfirmInput').value = '';
-  document.getElementById('clearLibraryConfirmBtn').disabled = true;
   document.getElementById('clearLibraryModal').classList.add('open');
-  setTimeout(()=>document.getElementById('clearConfirmInput').focus(),50);
 }
 function closeClearLibraryModal() { document.getElementById('clearLibraryModal').classList.remove('open'); }
-function validateClearConfirm() {
-  document.getElementById('clearLibraryConfirmBtn').disabled = document.getElementById('clearConfirmInput').value !== 'CLEAR';
-}
 function confirmClearLibrary() {
   library = []; nextId = 1; saveLib();
   selectedRemoteId = null;
+  libraryCurrentFolderId = null;
+  libraryBackStack = [];
   closeClearLibraryModal();
   renderSidebarTree();
   if (currentTab==='library') renderLibraryPane();
@@ -762,24 +1365,50 @@ function getFolderPath(id) {
   return '/ '+parts.join(' / ');
 }
 
-['folderModal','renameModal','deleteModal','clearLibraryModal','irdbFolderModal'].forEach(id => {
+['folderModal','renameModal','deleteModal','clearLibraryModal','clearFavoritesModal','irdbFolderModal','irdbRemoteModal'].forEach(id => {
   document.getElementById(id).addEventListener('click', function(e){ if(e.target===this) this.classList.remove('open'); });
 });
 
 // ===== IRDB =====
+// Cache raw file content to avoid re-fetching (handles rate limits)
+const irdbFileCache = {};
 let irdbData=null, irdbExpanded={}, irdbSelectedPath=null, _irdbFolderPath='';
+let _irdbFolderDestFolderId = null;
+let _irdbRemoteImportPath = '', _irdbRemoteImportName = '', _irdbRemoteImportBtn = null, _irdbRemoteDestFolderId = null;
+let _irdbImportExpanded = {};
+
+async function fetchWithCache(url) {
+  if (irdbFileCache[url]) return irdbFileCache[url];
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('HTTP '+resp.status + (resp.status===403 ? ' — GitHub rate limit. Wait a minute and try again.' : ''));
+  const text = await resp.text();
+  irdbFileCache[url] = text;
+  return text;
+}
 
 async function initIRDB() {
   if (irdbData) { renderIRDBTree(); return; }
-  document.getElementById('irdbTree').innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text3);font-family:var(--mono);font-size:11px;"><span class="spinner"></span> Loading IRDB...</div>`;
+  document.getElementById('irdbTree').innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:12px;color:var(--text3);font-family:var(--mono);font-size:11px;"><span class="spinner"></span> Loading IRDB tree...</div>`;
   try {
+    // Try to get from sessionStorage cache first
+    const cached = sessionStorage.getItem('irdb_tree');
+    if (cached) {
+      irdbData = JSON.parse(cached);
+      renderIRDBTree();
+      return;
+    }
     const r = await fetch('https://api.github.com/repos/Lucaslhm/Flipper-IRDB/git/trees/main?recursive=1');
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    if (!r.ok) {
+      if (r.status === 403) throw new Error('GitHub API rate limit hit. Try again in a minute, or wait up to an hour for unauthenticated limits to reset.');
+      throw new Error('HTTP '+r.status);
+    }
     const data = await r.json();
     irdbData = data.tree.filter(n=>n.type==='blob'&&n.path.endsWith('.ir'));
+    // Cache the tree in sessionStorage so page refreshes don't re-hit the API
+    try { sessionStorage.setItem('irdb_tree', JSON.stringify(irdbData)); } catch(e) {}
     renderIRDBTree();
   } catch(e) {
-    document.getElementById('irdbTree').innerHTML=`<div style="padding:12px;color:var(--red);font-family:var(--mono);font-size:11px;">Failed: ${escHtml(String(e))}</div>`;
+    document.getElementById('irdbTree').innerHTML=`<div style="padding:12px;color:var(--red);font-family:var(--mono);font-size:11px;line-height:1.6;"><i class="ti ti-alert-circle"></i> ${escHtml(String(e))}<br><br><button class="btn btn-sm" onclick="irdbData=null;initIRDB()"><i class="ti ti-refresh"></i> Retry</button></div>`;
   }
 }
 function buildIRDBTree() {
@@ -823,9 +1452,13 @@ function renderIRDBLevel(container, node, path, depth, search) {
     const isSel=irdbSelectedPath===f.path;
     const row=document.createElement('div');
     row.style.cssText=`padding:5px 8px 5px ${8+depth*12+12}px;display:flex;align-items:center;gap:5px;cursor:pointer;font-family:var(--mono);font-size:11px;transition:background 0.1s;${isSel?'background:var(--accent-dim);color:var(--accent2);':'color:var(--text2);'}`;
-    row.innerHTML=`<i class="ti ti-device-remote-control" style="font-size:12px;flex-shrink:0;"></i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(f.name.replace('.ir',''))}</span>`;
-    row.onmouseenter=()=>{ if(!isSel) row.style.background='var(--bg3)'; };
-    row.onmouseleave=()=>{ if(!isSel) row.style.background=''; };
+    const remoteName = f.name.replace('.ir','');
+    row.innerHTML=`
+      <i class="ti ti-device-remote" style="font-size:12px;flex-shrink:0;"></i>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(remoteName)}</span>
+      <button class="tree-act irdb-file-btn" title="Import remote" onclick="event.stopPropagation();openIRDBRemoteModal('${escAttr(f.path)}','${escAttr(remoteName)}',this,event)" style="opacity:0;flex-shrink:0;"><i class="ti ti-download"></i></button>`;
+    row.onmouseenter=()=>{ if(!isSel) row.style.background='var(--bg3)'; row.querySelector('.irdb-file-btn').style.opacity='1'; };
+    row.onmouseleave=()=>{ if(!isSel) row.style.background=''; row.querySelector('.irdb-file-btn').style.opacity='0'; };
     row.onclick=()=>{ irdbSelectedPath=f.path; renderIRDBTree(); loadIRDBFile(f); };
     container.appendChild(row);
   });
@@ -841,13 +1474,11 @@ async function loadIRDBFile(file) {
   const el=document.getElementById('irdbRemoteView');
   el.innerHTML=`<div style="display:flex;align-items:center;gap:8px;padding:20px;color:var(--text3);font-family:var(--mono);font-size:11px;"><span class="spinner"></span> Loading...</div>`;
   try {
-    const resp=await fetch(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${file.path}`);
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const text=await resp.text();
+    const text=await fetchWithCache(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${file.path}`);
     const buttons=parseIRFile(text);
     renderIRDBRemote(el, file, buttons);
   } catch(e) {
-    el.innerHTML=`<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:11px;"><i class="ti ti-alert-circle"></i> Failed: ${escHtml(String(e))}</div>`;
+    el.innerHTML=`<div style="padding:20px;color:var(--red);font-family:var(--mono);font-size:11px;line-height:1.6;"><i class="ti ti-alert-circle"></i> ${escHtml(String(e))}</div>`;
   }
 }
 function renderIRDBRemote(el, file, buttons) {
@@ -856,12 +1487,12 @@ function renderIRDBRemote(el, file, buttons) {
   const hdr=document.createElement('div');
   hdr.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:12px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);';
   hdr.innerHTML=`
-    <i class="ti ti-device-remote-control" style="color:var(--accent2);font-size:18px;flex-shrink:0;"></i>
+    <i class="ti ti-device-remote" style="color:var(--accent2);font-size:18px;flex-shrink:0;"></i>
     <div style="flex:1;">
       <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;">${escHtml(name)}</div>
       <div style="font-family:var(--mono);font-size:10px;color:var(--text3);">${escHtml(file.path)} &middot; ${buttons.length} button${buttons.length!==1?'s':''}</div>
     </div>
-    <button class="btn btn-sm" id="irdb-import-${btoa(file.path).replace(/[^a-z0-9]/gi,'')}" onclick="importIRDBRemote('${escAttr(file.path)}','${escAttr(name)}',this)"><i class="ti ti-download"></i> Import</button>`;
+    <button class="btn btn-sm" onclick="openIRDBRemoteModal('${escAttr(file.path)}','${escAttr(name)}',this,event)"><i class="ti ti-download"></i> Import</button>`;
   el.appendChild(hdr);
   if(!buttons.length){
     const emp=document.createElement('div');
@@ -879,34 +1510,104 @@ function renderIRDBRemote(el, file, buttons) {
         <span class="signal-chip cmd"><i class="ti ti-terminal" style="font-size:9px;"></i> ${escHtml(btn.cmd||'—')}</span>
         ${btn.proto?`<span class="signal-chip proto">${escHtml(btn.proto)}</span>`:''}
       </div>
-      <button class="btn btn-green btn-sm" onclick="sendButtonSignal('${escAttr(btn.addr)}','${escAttr(btn.cmd)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Send</button>`;
+      <button class="btn btn-green btn-sm" onclick="sendButtonSignal('${escAttr(btn.addr)}','${escAttr(btn.cmd)}','${escAttr(name+' / '+btn.name)}')" ${writer?'':'disabled'}><i class="ti ti-send"></i> Send</button>`;
     el.appendChild(box);
   });
 }
-// Fixed: pass btnEl directly instead of relying on event.target
-async function importIRDBRemote(path, name, btnEl) {
+async function importIRDBRemote(path, name, btnEl, destFolderId=null) {
   const origHtml = btnEl ? btnEl.innerHTML : '';
   if (btnEl) { btnEl.disabled=true; btnEl.innerHTML='<span class="spinner"></span>'; }
   try {
-    const resp=await fetch(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${path}`);
-    const text=await resp.text();
+    const text=await fetchWithCache(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${path}`);
     const buttons=parseIRFile(text);
-    if(!buttons.length){ if(btnEl){btnEl.innerHTML=origHtml;btnEl.disabled=false;} appendLog(`"${name}" — no compatible buttons.`,'sys'); return; }
-    const parts=path.split('/'); let parentId=null;
-    for(let i=0;i<parts.length-1;i++){
-      const fn=parts[i];
-      let folder=library.find(f=>f.type==='folder'&&f.name===fn&&f.parentId===parentId);
-      if(!folder){const fid=genId();library.push({type:'folder',id:fid,name:fn,parentId,open:false});parentId=fid;}
-      else parentId=folder.id;
-    }
-    library.push({type:'remote',id:genId(),name,folderId:parentId,buttons});
+    if(!buttons.length){ if(btnEl){btnEl.innerHTML=origHtml;btnEl.disabled=false;} appendLog(`"${name}" — no compatible buttons.`,'sys'); return false; }
+    const parentId = (destFolderId == null || destFolderId === '') ? null : parseInt(destFolderId);
+    library.push({type:'remote',id:genId(),name,folderId:parentId,buttons,favorite:false});
     saveLib(); renderSidebarTree();
-    appendLog(`Imported "${name}" (${buttons.length} btns) from IRDB.`,'sys');
+    appendLog(`Imported "${name}" (${buttons.length} btns) into "${parentId == null ? '/ Root' : getFolderPath(parentId)}".`,'sys');
     if(btnEl){ btnEl.innerHTML='<i class="ti ti-check"></i> Done'; setTimeout(()=>{btnEl.innerHTML=origHtml;btnEl.disabled=false;},2000); }
+    return true;
   } catch(e) {
     appendLog('IRDB import error: '+e,'err');
     if(btnEl){ btnEl.innerHTML=origHtml; btnEl.disabled=false; }
+    return false;
   }
+}
+
+function renderImportDestinationTree(containerId, selectedId, setSelected) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = '';
+
+  const rootRow = document.createElement('div');
+  rootRow.className = 'folder-picker-row' + (selectedId == null ? ' selected' : '');
+  rootRow.innerHTML = `<i class="ti ti-home"></i><span class="folder-picker-label">/ Root</span>`;
+  rootRow.onclick = () => {
+    setSelected(null);
+    renderImportDestinationTree(containerId, null, setSelected);
+  };
+  container.appendChild(rootRow);
+
+  const hasChildren = (folderId) => library.some(x => x.type==='folder' && x.parentId===folderId);
+  const getFolders = (parentId) => library
+    .filter(x => x.type==='folder' && x.parentId===parentId)
+    .sort((a,b) => a.name.localeCompare(b.name));
+
+  const renderLevel = (parentId, depth) => {
+    getFolders(parentId).forEach(folder => {
+      const key = String(folder.id);
+      const kids = hasChildren(folder.id);
+      const isOpen = Object.prototype.hasOwnProperty.call(_irdbImportExpanded, key) ? !!_irdbImportExpanded[key] : true;
+      const row = document.createElement('div');
+      row.className = 'folder-picker-row' + (selectedId===folder.id ? ' selected' : '');
+      row.style.paddingLeft = (8 + depth * 14) + 'px';
+      row.innerHTML = `
+        <i class="ti ${kids ? (isOpen ? 'ti-chevron-down' : 'ti-chevron-right') : 'ti-point'}"></i>
+        <i class="ti ti-folder"></i>
+        <span class="folder-picker-label">${escHtml(folder.name)}</span>`;
+      row.onclick = () => {
+        setSelected(folder.id);
+        renderImportDestinationTree(containerId, folder.id, setSelected);
+      };
+      const chevron = row.querySelector('i');
+      if (kids) {
+        chevron.onclick = (e) => {
+          e.stopPropagation();
+          _irdbImportExpanded[key] = !isOpen;
+          renderImportDestinationTree(containerId, selectedId, setSelected);
+        };
+      } else {
+        chevron.style.visibility = 'hidden';
+      }
+      container.appendChild(row);
+      if (kids && isOpen) renderLevel(folder.id, depth + 1);
+    });
+  };
+
+  renderLevel(null, 1);
+}
+
+function openIRDBRemoteModal(path, name, btnEl, e=null) {
+  if (e) e.stopPropagation();
+  _irdbRemoteImportPath = path;
+  _irdbRemoteImportName = name;
+  _irdbRemoteImportBtn = btnEl || null;
+  _irdbRemoteDestFolderId = null;
+  _irdbImportExpanded = {};
+  document.getElementById('irdbRemoteModalDesc').textContent = `Import "${name}" into your library.`;
+  renderImportDestinationTree('irdbRemoteDestTree', _irdbRemoteDestFolderId, (id) => { _irdbRemoteDestFolderId = id; });
+  document.getElementById('irdbRemoteModal').classList.add('open');
+}
+function closeIrdbRemoteModal() { document.getElementById('irdbRemoteModal').classList.remove('open'); }
+async function confirmIRDBRemoteImport() {
+  const btn = document.getElementById('irdbRemoteImportBtn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Importing...';
+  const ok = await importIRDBRemote(_irdbRemoteImportPath, _irdbRemoteImportName, _irdbRemoteImportBtn, _irdbRemoteDestFolderId);
+  btn.disabled = false;
+  btn.innerHTML = origHtml;
+  if (ok) closeIrdbRemoteModal();
 }
 
 function openIRDBFolderModal(e, folderPath) {
@@ -914,39 +1615,49 @@ function openIRDBFolderModal(e, folderPath) {
   _irdbFolderPath = folderPath;
   const count = (irdbData||[]).filter(n=>n.path.startsWith(folderPath+'/')).length;
   document.getElementById('irdbFolderModalDesc').textContent = `Import all ${count} remote${count!==1?'s':''} from "${folderPath.split('/').pop()}" into your library.`;
-  refreshFolderSelect('irdbFolderDestSelect');
+  _irdbFolderDestFolderId = null;
+  _irdbImportExpanded = {};
+  renderImportDestinationTree('irdbFolderDestTree', _irdbFolderDestFolderId, (id) => { _irdbFolderDestFolderId = id; });
   document.getElementById('irdbFolderModal').classList.add('open');
 }
 function closeIrdbFolderModal() { document.getElementById('irdbFolderModal').classList.remove('open'); }
 async function confirmIRDBFolderImport() {
-  const destFolderId = document.getElementById('irdbFolderDestSelect').value || null;
+  const destFolderId = _irdbFolderDestFolderId;
   const folderFiles = (irdbData||[]).filter(n=>n.path.startsWith(_irdbFolderPath+'/'));
   const btn = document.getElementById('irdbFolderImportBtn');
   btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Importing...';
+  const rootParentId = (destFolderId == null || destFolderId === '') ? null : parseInt(destFolderId);
+  const importRootName = _irdbFolderPath.split('/').pop() || 'IRDB Import';
+  const importRoot = createImportFolder(importRootName, rootParentId);
+  const createdFolderIds = new Set([importRoot.id]);
   let imported=0, skipped=0;
   for (const f of folderFiles) {
     try {
-      const resp=await fetch(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${f.path}`);
-      const text=await resp.text();
+      const text=await fetchWithCache(`https://raw.githubusercontent.com/Lucaslhm/Flipper-IRDB/main/${f.path}`);
       const buttons=parseIRFile(text);
       if(!buttons.length){skipped++;continue;}
       const parts=f.path.split('/');
       const remoteName=parts[parts.length-1].replace('.ir','');
       const subParts=parts.slice(_irdbFolderPath.split('/').length,-1);
-      let parentId=destFolderId?parseInt(destFolderId):null;
+      let parentId=importRoot.id;
       for(const sp of subParts){
         let folder=library.find(fl=>fl.type==='folder'&&fl.name===sp&&fl.parentId===parentId);
-        if(!folder){const fid=genId();library.push({type:'folder',id:fid,name:sp,parentId,open:false});parentId=fid;}
+        if(!folder){
+          const newFolder = createFolderEntry(sp, parentId, false);
+          createdFolderIds.add(newFolder.id);
+          parentId=newFolder.id;
+        }
         else parentId=folder.id;
       }
-      library.push({type:'remote',id:genId(),name:remoteName,folderId:parentId,buttons});
+      library.push({type:'remote',id:genId(),name:remoteName,folderId:parentId,buttons,favorite:false});
       imported++;
     } catch(e){ skipped++; }
   }
+  if (!imported) library = library.filter(x => !(x.type === 'folder' && createdFolderIds.has(x.id)));
   saveLib(); renderSidebarTree();
   closeIrdbFolderModal();
   btn.disabled=false; btn.innerHTML='<i class="ti ti-download"></i> Import All';
-  appendLog(`IRDB folder import: ${imported} imported, ${skipped} skipped.`,'sys');
+  appendLog(`IRDB folder import into "${importRoot.name}": ${imported} imported, ${skipped} skipped.`,'sys');
   if(currentTab==='library') renderLibraryPane();
 }
 
@@ -958,3 +1669,4 @@ function escAttr(s){ return String(s||'').replace(/'/g,'&#39;').replace(/"/g,'&q
 switchTab('library');
 renderSidebarTree();
 validateInputs();
+renderHistory();

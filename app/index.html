@@ -38,7 +38,14 @@
         <i class="ti ti-folder-up"></i>
         <input type="file" webkitdirectory multiple style="display:none" onchange="importFolder(this.files,this)">
       </label>
+      <button class="btn-ghost btn btn-icon" title="Close all folders" onclick="collapseAllFolders()"><i class="ti ti-folders"></i></button>
       <button class="btn-ghost btn btn-icon" title="Clear library" onclick="openClearLibraryModal()"><i class="ti ti-trash"></i></button>
+    </div>
+    <div class="sidebar-search">
+      <div class="search-wrap sidebar-search-wrap">
+        <i class="ti ti-search"></i>
+        <input type="text" id="sidebarSearch" placeholder="Search sidebar..." oninput="setSidebarSearch(this.value)">
+      </div>
     </div>
     <div class="sidebar-tree" id="sidebarTree"></div>
     <div class="drag-hint" id="dragHint">Drop here to move to root</div>
@@ -55,6 +62,14 @@
 
       <!-- LIBRARY (default) -->
       <div id="pane-library">
+        <div class="library-view-tabs">
+          <button class="library-view-tab active" id="libraryView-overview" onclick="setLibraryView('overview')"><i class="ti ti-layout-grid"></i> Library</button>
+          <button class="library-view-tab" id="libraryView-favorites" onclick="setLibraryView('favorites')"><i class="ti ti-star"></i> Favorites</button>
+        </div>
+        <div class="search-wrap library-main-search" id="librarySearchWrap">
+          <i class="ti ti-search"></i>
+          <input type="text" id="librarySearch" placeholder="Search this folder..." oninput="setLibrarySearch(this.value)">
+        </div>
         <div id="libraryContent"></div>
       </div>
 
@@ -82,6 +97,13 @@
 
       <!-- TRANSMIT -->
       <div id="pane-transmit" style="display:none;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-title" style="justify-content:space-between;">
+            <span><i class="ti ti-history"></i> Transmit History</span>
+            <button class="btn btn-sm btn-ghost" onclick="clearHistory()"><i class="ti ti-trash"></i> Clear</button>
+          </div>
+          <div id="txHistory" class="hist-list"></div>
+        </div>
         <div class="card">
           <div class="card-title"><i class="ti ti-radio"></i> Manual Signal Transmitter</div>
           <div class="row2">
@@ -207,11 +229,21 @@
   <div class="modal">
     <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear Entire Library?</div>
     <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Permanently deletes all folders, remotes, and buttons. Cannot be undone.</p>
-    <p style="font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:8px;">Type <span style="color:var(--red);font-weight:600;">CLEAR</span> to confirm:</p>
-    <input type="text" id="clearConfirmInput" placeholder="CLEAR" oninput="validateClearConfirm()" autocomplete="off" spellcheck="false">
     <div class="modal-actions">
       <button class="btn" onclick="closeClearLibraryModal()">Cancel</button>
-      <button class="btn btn-danger" id="clearLibraryConfirmBtn" onclick="confirmClearLibrary()" disabled><i class="ti ti-trash"></i> Clear Library</button>
+      <button class="btn btn-danger" id="clearLibraryConfirmBtn" onclick="confirmClearLibrary()"><i class="ti ti-trash"></i> Clear Library</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Clear Favorites -->
+<div class="modal-overlay" id="clearFavoritesModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear All Favorites?</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Removes all remote and signal favorites. This does not delete your library items.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeClearFavoritesModal()">Cancel</button>
+      <button class="btn btn-danger" id="clearFavoritesConfirmBtn" onclick="confirmClearFavorites()"><i class="ti ti-eraser"></i> Clear Favorites</button>
     </div>
   </div>
 </div>
@@ -223,11 +255,27 @@
     <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbFolderModalDesc">Import all remotes from this folder.</p>
     <div class="field-group">
       <label class="field-label">Save into Folder</label>
-      <select id="irdbFolderDestSelect"><option value="">/ Root</option></select>
+      <div id="irdbFolderDestTree" class="folder-picker-tree"></div>
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeIrdbFolderModal()">Cancel</button>
       <button class="btn btn-accent" id="irdbFolderImportBtn" onclick="confirmIRDBFolderImport()"><i class="ti ti-download"></i> Import All</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IRDB Remote Import -->
+<div class="modal-overlay" id="irdbRemoteModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-device-remote"></i>Import Remote from IRDB</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbRemoteModalDesc">Import selected remote.</p>
+    <div class="field-group">
+      <label class="field-label">Save into Folder</label>
+      <div id="irdbRemoteDestTree" class="folder-picker-tree"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeIrdbRemoteModal()">Cancel</button>
+      <button class="btn btn-accent" id="irdbRemoteImportBtn" onclick="confirmIRDBRemoteImport()"><i class="ti ti-download"></i> Import</button>
     </div>
   </div>
 </div>
