@@ -424,8 +424,8 @@
         "uuid": "66f6adda-2e3e-4178-8b78-9ec03b46616f"
       },
       {
-        "filename": "Adafruit_Feather_RP2040_USB_Host_2.kicad_sch",
-        "name": "Adafruit Feather RP2040 USB Host_2",
+        "filename": "Adafruit Feather RP2040 USB Host.kicad_sch",
+        "name": "Adafruit Feather RP2040 USB Host",
         "uuid": "19e6fcde-947e-4baf-8dcb-b21c35769c07"
       }
     ],
@@ -439,7 +439,7 @@
     ],
     [
       "19e6fcde-947e-4baf-8dcb-b21c35769c07",
-      "Adafruit Feather RP2040 USB Host_2"
+      "Adafruit Feather RP2040 USB Host"
     ]
   ],
   "text_variables": {},

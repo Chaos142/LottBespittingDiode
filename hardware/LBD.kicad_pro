@@ -646,13 +646,25 @@
         "uuid": "02a771dc-3dd8-4911-bfb9-5380c79ee9e9"
       }
     ],
-    "used_designators": "",
+    "used_designators": "#PWR1-4,#PWR7-11,#PWR17-18,#PWR25-60,C6-20,J2,#FLG3-4,R3,R7-14,U4-5,SW2",
     "variants": []
   },
   "sheets": [
     [
       "02a771dc-3dd8-4911-bfb9-5380c79ee9e9",
       "LBD"
+    ],
+    [
+      "376bda07-d5ae-4913-a721-00f9a4e91734",
+      "Power"
+    ],
+    [
+      "71b12c6e-619d-4204-9393-ba9a7615ba9f",
+      "USB"
+    ],
+    [
+      "0c2041eb-daed-4eed-ade6-f8635714311d",
+      "Flash"
     ]
   ],
   "text_variables": {},

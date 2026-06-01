@@ -45093,7 +45093,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND4")
 					(unit 1)
 				)
@@ -45172,7 +45172,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C20")
 					(unit 1)
 				)
@@ -45250,7 +45250,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$8")
 					(unit 1)
 				)
@@ -45340,7 +45340,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U3")
 					(unit 1)
 				)
@@ -45418,7 +45418,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$48")
 					(unit 1)
 				)
@@ -45497,7 +45497,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V4")
 					(unit 1)
 				)
@@ -45575,7 +45575,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$55")
 					(unit 1)
 				)
@@ -45662,7 +45662,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "SW2")
 					(unit 1)
 				)
@@ -45743,7 +45743,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R20")
 					(unit 1)
 				)
@@ -45821,7 +45821,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$37")
 					(unit 1)
 				)
@@ -45899,7 +45899,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND7")
 					(unit 1)
 				)
@@ -45977,7 +45977,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND15")
 					(unit 1)
 				)
@@ -46055,7 +46055,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$30")
 					(unit 1)
 				)
@@ -46134,7 +46134,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "D4")
 					(unit 1)
 				)
@@ -46212,7 +46212,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$20")
 					(unit 1)
 				)
@@ -46295,7 +46295,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R3")
 					(unit 1)
 				)
@@ -46377,7 +46377,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R18")
 					(unit 1)
 				)
@@ -46456,7 +46456,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C6")
 					(unit 1)
 				)
@@ -46535,7 +46535,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND1")
 					(unit 1)
 				)
@@ -46781,7 +46781,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "IC1")
 					(unit 1)
 				)
@@ -46859,7 +46859,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$40")
 					(unit 1)
 				)
@@ -46940,7 +46940,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "D3")
 					(unit 1)
 				)
@@ -47019,7 +47019,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$12")
 					(unit 1)
 				)
@@ -47098,7 +47098,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND16")
 					(unit 1)
 				)
@@ -47177,7 +47177,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$6")
 					(unit 1)
 				)
@@ -47256,7 +47256,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V20")
 					(unit 1)
 				)
@@ -47379,7 +47379,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "JP1")
 					(unit 1)
 				)
@@ -47457,7 +47457,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$15")
 					(unit 1)
 				)
@@ -47536,7 +47536,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$44")
 					(unit 1)
 				)
@@ -47619,7 +47619,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R6")
 					(unit 1)
 				)
@@ -47700,7 +47700,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R7")
 					(unit 1)
 				)
@@ -47778,7 +47778,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V6")
 					(unit 1)
 				)
@@ -47857,7 +47857,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C2")
 					(unit 1)
 				)
@@ -47936,7 +47936,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "L2")
 					(unit 1)
 				)
@@ -48015,7 +48015,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND10")
 					(unit 1)
 				)
@@ -48093,7 +48093,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$23")
 					(unit 1)
 				)
@@ -48171,7 +48171,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$16")
 					(unit 1)
 				)
@@ -48249,7 +48249,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$49")
 					(unit 1)
 				)
@@ -48331,7 +48331,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R13")
 					(unit 1)
 				)
@@ -48409,7 +48409,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$10")
 					(unit 1)
 				)
@@ -48487,7 +48487,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$62")
 					(unit 1)
 				)
@@ -48566,7 +48566,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V7")
 					(unit 1)
 				)
@@ -48644,7 +48644,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND11")
 					(unit 1)
 				)
@@ -48722,7 +48722,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V14")
 					(unit 1)
 				)
@@ -48801,7 +48801,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C13")
 					(unit 1)
 				)
@@ -48880,7 +48880,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C22")
 					(unit 1)
 				)
@@ -48959,7 +48959,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V3")
 					(unit 1)
 				)
@@ -49038,7 +49038,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "L0")
 					(unit 1)
 				)
@@ -49120,7 +49120,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R10")
 					(unit 1)
 				)
@@ -49195,7 +49195,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U$35")
 					(unit 1)
 				)
@@ -49273,7 +49273,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$19")
 					(unit 1)
 				)
@@ -49351,7 +49351,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$17")
 					(unit 1)
 				)
@@ -49438,7 +49438,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "X1")
 					(unit 3)
 				)
@@ -49516,7 +49516,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$33")
 					(unit 1)
 				)
@@ -49594,7 +49594,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$28")
 					(unit 1)
 				)
@@ -49673,7 +49673,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C28")
 					(unit 1)
 				)
@@ -49751,7 +49751,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$7")
 					(unit 1)
 				)
@@ -49830,7 +49830,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C15")
 					(unit 1)
 				)
@@ -49908,7 +49908,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$25")
 					(unit 1)
 				)
@@ -49986,7 +49986,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V15")
 					(unit 1)
 				)
@@ -50088,7 +50088,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U1")
 					(unit 1)
 				)
@@ -50171,7 +50171,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R5")
 					(unit 1)
 				)
@@ -50250,7 +50250,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V5")
 					(unit 1)
 				)
@@ -50329,7 +50329,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C5")
 					(unit 1)
 				)
@@ -50411,7 +50411,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R19")
 					(unit 1)
 				)
@@ -50490,7 +50490,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C8")
 					(unit 1)
 				)
@@ -50568,7 +50568,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$29")
 					(unit 1)
 				)
@@ -50647,7 +50647,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "CHG0")
 					(unit 1)
 				)
@@ -50726,7 +50726,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND6")
 					(unit 1)
 				)
@@ -50805,7 +50805,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C7")
 					(unit 1)
 				)
@@ -50883,7 +50883,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$11")
 					(unit 1)
 				)
@@ -50961,7 +50961,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$52")
 					(unit 1)
 				)
@@ -51050,7 +51050,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C4")
 					(unit 1)
 				)
@@ -51129,7 +51129,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C17")
 					(unit 1)
 				)
@@ -51208,7 +51208,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C18")
 					(unit 1)
 				)
@@ -51291,7 +51291,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R1")
 					(unit 1)
 				)
@@ -51370,7 +51370,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V2")
 					(unit 1)
 				)
@@ -51445,7 +51445,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$9")
 					(unit 1)
 				)
@@ -51523,7 +51523,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$60")
 					(unit 1)
 				)
@@ -51602,7 +51602,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND3")
 					(unit 1)
 				)
@@ -51683,7 +51683,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "Y1")
 					(unit 1)
 				)
@@ -51764,7 +51764,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R15")
 					(unit 1)
 				)
@@ -51843,7 +51843,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C9")
 					(unit 1)
 				)
@@ -51922,7 +51922,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C19")
 					(unit 1)
 				)
@@ -52033,7 +52033,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "JP3")
 					(unit 1)
 				)
@@ -52111,7 +52111,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$2")
 					(unit 1)
 				)
@@ -52190,7 +52190,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "L1")
 					(unit 1)
 				)
@@ -52268,7 +52268,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$45")
 					(unit 1)
 				)
@@ -52380,7 +52380,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "X6")
 					(unit 1)
 				)
@@ -52461,7 +52461,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R11")
 					(unit 1)
 				)
@@ -52539,7 +52539,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$22")
 					(unit 1)
 				)
@@ -52614,7 +52614,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U$34")
 					(unit 1)
 				)
@@ -52692,7 +52692,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$1")
 					(unit 1)
 				)
@@ -52771,7 +52771,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C1")
 					(unit 1)
 				)
@@ -52849,7 +52849,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$21")
 					(unit 1)
 				)
@@ -52928,7 +52928,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND5")
 					(unit 1)
 				)
@@ -53006,7 +53006,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$26")
 					(unit 1)
 				)
@@ -53088,7 +53088,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R12")
 					(unit 1)
 				)
@@ -53167,7 +53167,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$24")
 					(unit 1)
 				)
@@ -53245,7 +53245,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V1")
 					(unit 1)
 				)
@@ -53323,7 +53323,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V12")
 					(unit 1)
 				)
@@ -53423,7 +53423,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U2")
 					(unit 1)
 				)
@@ -53505,7 +53505,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R17")
 					(unit 1)
 				)
@@ -53584,7 +53584,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V8")
 					(unit 1)
 				)
@@ -53662,7 +53662,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V11")
 					(unit 1)
 				)
@@ -53740,7 +53740,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$42")
 					(unit 1)
 				)
@@ -53818,7 +53818,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$27")
 					(unit 1)
 				)
@@ -53905,7 +53905,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "X2")
 					(unit 1)
 				)
@@ -53984,7 +53984,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C12")
 					(unit 1)
 				)
@@ -54063,7 +54063,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C27")
 					(unit 1)
 				)
@@ -54142,7 +54142,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND9")
 					(unit 1)
 				)
@@ -54220,7 +54220,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$59")
 					(unit 1)
 				)
@@ -54301,7 +54301,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R16")
 					(unit 1)
 				)
@@ -54379,7 +54379,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$14")
 					(unit 1)
 				)
@@ -54460,7 +54460,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R2")
 					(unit 1)
 				)
@@ -54547,7 +54547,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "X1")
 					(unit 1)
 				)
@@ -54634,7 +54634,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "LED1")
 					(unit 1)
 				)
@@ -54727,7 +54727,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "CONN1")
 					(unit 1)
 				)
@@ -54805,7 +54805,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$50")
 					(unit 1)
 				)
@@ -54900,7 +54900,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "CONN1")
 					(unit 3)
 				)
@@ -54975,7 +54975,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U$32")
 					(unit 1)
 				)
@@ -55062,7 +55062,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "X1")
 					(unit 2)
 				)
@@ -55141,7 +55141,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C26")
 					(unit 1)
 				)
@@ -55224,7 +55224,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R4")
 					(unit 1)
 				)
@@ -55302,7 +55302,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$4")
 					(unit 1)
 				)
@@ -55380,7 +55380,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V9")
 					(unit 1)
 				)
@@ -55458,7 +55458,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$51")
 					(unit 1)
 				)
@@ -55536,7 +55536,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "TP3")
 					(unit 1)
 				)
@@ -55614,7 +55614,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$5")
 					(unit 1)
 				)
@@ -55692,7 +55692,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V10")
 					(unit 1)
 				)
@@ -55773,7 +55773,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R8")
 					(unit 1)
 				)
@@ -55851,7 +55851,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$38")
 					(unit 1)
 				)
@@ -55929,7 +55929,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$39")
 					(unit 1)
 				)
@@ -56007,7 +56007,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V13")
 					(unit 1)
 				)
@@ -56102,7 +56102,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "CONN1")
 					(unit 2)
 				)
@@ -56180,7 +56180,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#+3V16")
 					(unit 1)
 				)
@@ -56259,7 +56259,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND2")
 					(unit 1)
 				)
@@ -56338,7 +56338,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$41")
 					(unit 1)
 				)
@@ -56416,7 +56416,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$36")
 					(unit 1)
 				)
@@ -56503,7 +56503,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "SW1")
 					(unit 1)
 				)
@@ -56582,7 +56582,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C21")
 					(unit 1)
 				)
@@ -56660,7 +56660,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$58")
 					(unit 1)
 				)
@@ -56739,7 +56739,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C10")
 					(unit 1)
 				)
@@ -56818,7 +56818,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C3")
 					(unit 1)
 				)
@@ -56897,7 +56897,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#GND8")
 					(unit 1)
 				)
@@ -56976,7 +56976,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C14")
 					(unit 1)
 				)
@@ -57069,7 +57069,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "IC2")
 					(unit 1)
 				)
@@ -57148,7 +57148,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "C11")
 					(unit 1)
 				)
@@ -57227,7 +57227,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "D+1")
 					(unit 1)
 				)
@@ -57305,7 +57305,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$3")
 					(unit 1)
 				)
@@ -57390,7 +57390,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "Q3")
 					(unit 1)
 				)
@@ -57468,7 +57468,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "#U$18")
 					(unit 1)
 				)
@@ -57547,7 +57547,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "D-1")
 					(unit 1)
 				)
@@ -57629,7 +57629,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R9")
 					(unit 1)
 				)
@@ -57710,7 +57710,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "R14")
 					(unit 1)
 				)
@@ -57785,7 +57785,7 @@
 		)
 		(instances
 			(project "Adafruit Feather RP2040 USB Host"
-				(path "/66f6adda-2e3e-4178-8b78-9ec03b46616f"
+				(path "/19e6fcde-947e-4baf-8dcb-b21c35769c07"
 					(reference "U$31")
 					(unit 1)
 				)
@@ -57797,5 +57797,4 @@
 			(page "1")
 		)
 	)
-	(embedded_fonts no)
 )
