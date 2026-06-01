@@ -2,7 +2,10 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ] 
+    branches: [ main ]
+    paths:
+      - 'app/**'
+      - '.github/workflows/deploy.yml'
 
 permissions:
   contents: write
