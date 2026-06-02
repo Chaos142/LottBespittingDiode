@@ -1,285 +1,883 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LBD Controller</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LBD — Lott-Bespitting Diode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<style>
+  :root {
+    --bg:        #080808;
+    --bg2:       #0d0d0d;
+    --ir:        #c850ff;
+    --ir-dim:    #6e1d96;
+    --amber:     #ffb020;
+    --amber-dim: #7a5000;
+    --white:     #e8e8e8;
+    --muted:     #555;
+    --border:    #1f1f1f;
+    --glow-ir:   0 0 18px #c850ff88, 0 0 60px #c850ff33;
+    --glow-amb:  0 0 18px #ffb02088, 0 0 60px #ffb02033;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* ─── CURSOR ─────────────────────────────────────────── */
+  #cursor {
+    position: fixed; top: 0; left: 0; z-index: 9999;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+  #cursor-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ir);
+    box-shadow: var(--glow-ir);
+    position: absolute; transform: translate(-50%,-50%);
+    transition: transform .1s;
+  }
+  #cursor-ring {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 1px solid var(--ir);
+    position: absolute; transform: translate(-50%,-50%);
+    transition: width .25s, height .25s, opacity .25s;
+    opacity: .5;
+  }
+  body:has(a:hover) #cursor-ring,
+  body:has(button:hover) #cursor-ring {
+    width: 56px; height: 56px; opacity: .9;
+  }
+
+  /* ─── SCANLINES ──────────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 9000;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 2px,
+      rgba(0,0,0,.15) 2px, rgba(0,0,0,.15) 4px
+    );
+  }
+
+  /* ─── NOISE ─────────────────────────────────────────── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 8999;
+    pointer-events: none;
+    opacity: .04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  /* ─── GRID BG ────────────────────────────────────────── */
+  .grid-bg {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(200,80,255,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,80,255,.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    animation: grid-drift 30s linear infinite;
+  }
+  @keyframes grid-drift {
+    from { background-position: 0 0; }
+    to   { background-position: 48px 48px; }
+  }
+
+  /* ─── HERO ──────────────────────────────────────────── */
+  #hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 8rem 10vw;      /* <-- vertical padding added */
+    overflow: hidden;
+  }
+
+  .ir-beam {
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 60vw; height: 60vw;
+    pointer-events: none;
+  }
+  .ir-beam::before, .ir-beam::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(200,80,255,.15);
+    animation: pulse-ring 3s ease-out infinite;
+  }
+  .ir-beam::after { animation-delay: 1.5s; }
+  @keyframes pulse-ring {
+    0%   { transform: scale(.3); opacity: .9; }
+    100% { transform: scale(1);  opacity: 0;  }
+  }
+
+  .beam-core {
+    position: absolute; right: -20px; top: 50%;
+    transform: translateY(-50%);
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--ir);
+    box-shadow: var(--glow-ir), 0 0 120px #c850ff66;
+    animation: core-pulse 2s ease-in-out infinite alternate;
+  }
+  @keyframes core-pulse {
+    from { box-shadow: var(--glow-ir), 0 0 80px #c850ff44; }
+    to   { box-shadow: 0 0 30px #c850ffcc, 0 0 180px #c850ff88; }
+  }
+
+  .ring {
+    position: absolute; right: 0; top: 50%; transform: translate(50%,-50%);
+    border-radius: 50%;
+    border: 1px solid rgba(200,80,255,.1);
+    animation: expand-ring 4s ease-out infinite;
+  }
+  .ring:nth-child(1) { width: 200px; height: 200px; animation-delay: 0s;   }
+  .ring:nth-child(2) { width: 400px; height: 400px; animation-delay: .8s;  }
+  .ring:nth-child(3) { width: 600px; height: 600px; animation-delay: 1.6s; }
+  .ring:nth-child(4) { width: 800px; height: 800px; animation-delay: 2.4s; }
+  @keyframes expand-ring {
+    0%   { opacity: .8; }
+    100% { opacity: 0;  }
+  }
+
+  .hero-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .75rem; letter-spacing: .3em;
+    color: var(--ir); text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    opacity: 0; animation: fade-up .8s .2s forwards;
+  }
+  .hero-eyebrow::before { content: '> '; }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 14vw, 13rem);
+    line-height: .9; letter-spacing: -.01em;
+    color: var(--white);
+    opacity: 0; animation: fade-up .9s .4s forwards;
+  }
+  .hero-title span { color: var(--ir); text-shadow: var(--glow-ir); }
+
+  .hero-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: clamp(.8rem, 1.5vw, 1.1rem);
+    color: var(--muted);
+    margin-top: 1.5rem; max-width: 480px; line-height: 1.8;
+    opacity: 0; animation: fade-up .9s .6s forwards;
+  }
+
+  .hero-cta {
+    margin-top: 3rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+    opacity: 0; animation: fade-up .9s .8s forwards;
+  }
+
+  /* GitHub link in nav-style row */
+  .hero-github {
+    margin-top: 1.5rem;
+    opacity: 0; animation: fade-up .9s 1.0s forwards;
+  }
+  .hero-github a {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .75rem; letter-spacing: .15em;
+    color: var(--muted); text-decoration: none;
+    display: inline-flex; align-items: center; gap: .5rem;
+    transition: color .25s;
+  }
+  .hero-github a:hover { color: var(--ir); }
+  .hero-github a i { font-size: 1rem; }
+
+  .btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .85rem; letter-spacing: .12em;
+    text-transform: uppercase; text-decoration: none;
+    padding: .9rem 2.2rem; border: 1px solid;
+    position: relative; overflow: hidden;
+    transition: color .3s; display: inline-block;
+  }
+  .btn::before {
+    content: '';
+    position: absolute; inset: 0;
+    transform: translateX(-100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+  }
+  .btn:hover::before { transform: translateX(0); }
+  .btn:hover { color: var(--bg); }
+  .btn-primary { border-color: var(--ir); color: var(--ir); box-shadow: var(--glow-ir); }
+  .btn-primary::before { background: var(--ir); }
+  .btn-ghost { border-color: var(--muted); color: var(--muted); }
+  .btn-ghost::before { background: var(--muted); }
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .scroll-hint {
+    position: absolute; bottom: 2.5rem; left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .65rem; letter-spacing: .25em;
+    color: var(--muted);
+    display: flex; flex-direction: column; align-items: center; gap: .6rem;
+    animation: fade-up 1s 1.4s both;
+  }
+  .scroll-hint::after {
+    content: '';
+    width: 1px; height: 40px;
+    background: linear-gradient(var(--ir), transparent);
+    animation: line-drop 1.6s ease-in-out infinite;
+  }
+  @keyframes line-drop {
+    0%,100% { transform: scaleY(0); transform-origin: top; }
+    50%      { transform: scaleY(1); }
+  }
+
+  /* ─── SECTIONS ───────────────────────────────────────── */
+  section {
+    position: relative; z-index: 1;
+    padding: 8rem 10vw;
+  }
+  section + section { border-top: 1px solid var(--border); }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .7rem; letter-spacing: .35em;
+    color: var(--ir); text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: .8rem;
+  }
+  .section-label::after {
+    content: ''; flex: 1; max-width: 80px;
+    height: 1px; background: var(--ir-dim);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
+    line-height: 1; color: var(--white); margin-bottom: 2rem;
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(40px);
+    transition: opacity .7s cubic-bezier(.4,0,.2,1), transform .7s cubic-bezier(.4,0,.2,1);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-left  { opacity: 0; transform: translateX(-50px); transition: opacity .7s .1s cubic-bezier(.4,0,.2,1), transform .7s .1s cubic-bezier(.4,0,.2,1); }
+  .reveal-left.visible  { opacity: 1; transform: translateX(0); }
+  .reveal-right { opacity: 0; transform: translateX(50px);  transition: opacity .7s .2s cubic-bezier(.4,0,.2,1), transform .7s .2s cubic-bezier(.4,0,.2,1); }
+  .reveal-right.visible { opacity: 1; transform: translateX(0); }
+
+  /* ─── TICKER ─────────────────────────────────────────── */
+  .ticker-wrap {
+    overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    padding: 1rem 0; background: var(--bg2);
+    position: relative; z-index: 1;
+  }
+  .ticker { display: flex; gap: 0; animation: ticker 24s linear infinite; white-space: nowrap; }
+  .ticker-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .75rem; letter-spacing: .15em;
+    color: var(--muted); padding: 0 3rem; text-transform: uppercase;
+  }
+  .ticker-item span { color: var(--ir); margin-right: .6rem; }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  /* ─── ARCHITECTURE ───────────────────────────────────── */
+  #architecture { background: var(--bg2); }
+
+  .arch-diagram {
+    margin-top: 3rem;
+    display: grid; grid-template-columns: 1fr 60px 1fr;
+    gap: 0; align-items: center;
+  }
+  .arch-box {
+    border: 1px solid var(--border); padding: 2rem;
+    position: relative; background: var(--bg);
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .arch-box:hover { border-color: var(--ir); box-shadow: inset 0 0 30px rgba(200,80,255,.05), var(--glow-ir); }
+  .arch-box-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .65rem; letter-spacing: .25em;
+    color: var(--ir); text-transform: uppercase; margin-bottom: 1rem;
+  }
+  .arch-box-title::before { content: '[ '; }
+  .arch-box-title::after  { content: ' ]'; }
+  .arch-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .8rem; color: var(--muted);
+    padding: .4rem 0; border-bottom: 1px solid var(--border);
+    transition: color .2s, padding-left .2s;
+  }
+  .arch-item:last-child { border-bottom: none; }
+  .arch-box:hover .arch-item { color: var(--white); }
+  .arch-box:hover .arch-item:hover { color: var(--ir); padding-left: .5rem; }
+  .arch-item::before { content: '→ '; color: var(--ir-dim); }
+
+  .arch-arrow {
+    display: flex; flex-direction: column; align-items: center;
+    gap: .4rem; font-family: 'Share Tech Mono', monospace;
+    font-size: .6rem; color: var(--ir); letter-spacing: .1em; text-transform: uppercase;
+  }
+  .arch-arrow-line {
+    width: 1px; height: 40px;
+    background: linear-gradient(var(--ir), var(--ir-dim));
+    position: relative; animation: data-flow 1.5s ease-in-out infinite;
+  }
+  @keyframes data-flow {
+    0%,100% { opacity: .4; }
+    50%      { opacity: 1;  }
+  }
+  .arch-arrow-line::after {
+    content: '▼'; position: absolute; bottom: -1rem; left: 50%;
+    transform: translateX(-50%); color: var(--ir); font-size: .7rem;
+    animation: data-flow 1.5s ease-in-out infinite;
+  }
+
+  .arch-bottom {
+    margin-top: 2rem; border: 1px solid var(--ir-dim);
+    padding: 1.5rem 2rem; background: rgba(200,80,255,.03);
+    display: flex; align-items: center; gap: 2rem;
+    position: relative; overflow: hidden;
+  }
+  .arch-bottom::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ir), transparent);
+    animation: sweep 3s ease-in-out infinite;
+  }
+  @keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+  .ir-matrix-label { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--ir); letter-spacing: .05em; }
+  .ir-leds { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ir-led {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ir); box-shadow: var(--glow-ir);
+    animation: led-blink 2s ease-in-out infinite;
+  }
+  .ir-led:nth-child(2n) { animation-delay: .3s; }
+  .ir-led:nth-child(3n) { animation-delay: .6s; }
+  .ir-led:nth-child(4n) { animation-delay: .9s; }
+  .ir-led:nth-child(5n) { animation-delay: 1.2s; }
+  @keyframes led-blink {
+    0%,100% { opacity: .3; box-shadow: none; }
+    50%      { opacity: 1;  box-shadow: var(--glow-ir); }
+  }
+
+  /* ─── FEATURES ───────────────────────────────────────── */
+  .features-grid {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);   /* forced 3 columns */
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .feature-card {
+    background: var(--bg); padding: 2.5rem 2rem;
+    position: relative; overflow: hidden;
+    transition: background .3s;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--ir); transform: scaleX(0); transform-origin: left;
+    transition: transform .4s cubic-bezier(.4,0,.2,1);
+  }
+  .feature-card:hover { background: rgba(200,80,255,.03); }
+  .feature-card:hover::before { transform: scaleX(1); }
+
+  .feature-icon {
+    font-size: 1.4rem; margin-bottom: 1.2rem;
+    color: var(--ir);
+    filter: drop-shadow(0 0 8px var(--ir));
+    display: block;
+  }
+  .feature-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--white); margin-bottom: .5rem; }
+  .feature-desc { font-size: .85rem; color: var(--muted); line-height: 1.7; }
+  .feature-num {
+    position: absolute; bottom: 1.5rem; right: 1.5rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .6rem; color: var(--border); letter-spacing: .2em;
+  }
+
+  /* ─── PROTOCOL ───────────────────────────────────────── */
+  #protocol { background: var(--bg2); }
+
+  .protocol-vis { margin-top: 3rem; font-family: 'Share Tech Mono', monospace; }
+  .proto-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.8rem; }
+  .proto-label { font-size: .7rem; color: var(--muted); letter-spacing: .15em; text-transform: uppercase; width: 80px; flex-shrink: 0; text-align: right; }
+  .proto-bar-wrap { flex: 1; height: 32px; position: relative; background: rgba(255,255,255,.03); border: 1px solid var(--border); overflow: hidden; }
+  .proto-bar {
+    height: 100%; background: linear-gradient(90deg, var(--ir), var(--ir-dim));
+    width: 0; transition: width 1.2s cubic-bezier(.4,0,.2,1); position: relative;
+  }
+  .proto-bar::after {
+    content: ''; position: absolute; top: 0; right: 0; bottom: 0; width: 2px;
+    background: #fff; box-shadow: 0 0 8px #fff;
+    animation: bar-pulse 1s ease-in-out infinite;
+  }
+  @keyframes bar-pulse { 0%,100% { opacity: 0; } 50% { opacity: 1; } }
+  .proto-bar-wrap.animate .proto-bar { width: var(--w); }
+  .proto-val { font-size: .75rem; color: var(--ir); width: 100px; flex-shrink: 0; }
+
+  .waveform-wrap { margin-top: 3rem; border: 1px solid var(--border); padding: 2rem; background: var(--bg); overflow: hidden; position: relative; }
+  .waveform-label { font-size: .65rem; letter-spacing: .2em; color: var(--muted); text-transform: uppercase; margin-bottom: 1.5rem; }
+  .waveform-label span { color: var(--ir); }
+  .waveform-svg { width: 100%; overflow: hidden; }
+
+  /* ─── SETUP ──────────────────────────────────────────── */
+  .setup-steps { margin-top: 3rem; counter-reset: step; }
+  .step { display: grid; grid-template-columns: 60px 1fr; gap: 1.5rem; padding: 2rem 0; border-bottom: 1px solid var(--border); position: relative; }
+  .step:last-child { border-bottom: none; }
+  .step-num { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1; color: var(--ir); opacity: .3; transition: opacity .3s; }
+  .step:hover .step-num { opacity: 1; }
+  .step-content h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); margin-bottom: .5rem; }
+  .step-content p { font-size: .9rem; color: var(--muted); line-height: 1.7; }
+  .step-tag { font-family: 'Share Tech Mono', monospace; font-size: .65rem; letter-spacing: .2em; background: rgba(200,80,255,.1); border: 1px solid var(--ir-dim); color: var(--ir); padding: .15rem .6rem; display: inline-block; margin-bottom: .6rem; }
+
+  /* ─── CODE ───────────────────────────────────────────── */
+  .code-block {
+    background: #0a0a0a; border: 1px solid var(--border);
+    padding: 1.5rem 2rem; margin-top: 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .8rem; color: #888; line-height: 1.8;
+    position: relative; overflow: hidden;
+  }
+  .code-block::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, var(--ir-dim), transparent);
+  }
+  .code-c { color: var(--muted); }
+  .code-k { color: var(--amber); }
+  .code-s { color: var(--ir); }
+  .code-v { color: #79c0ff; }
+  .code-n { color: var(--white); }
+
+  /* ─── WARNING ────────────────────────────────────────── */
+  #warning { background: rgba(255,176,32,.04); border-top: 1px solid var(--amber-dim); border-bottom: 1px solid var(--amber-dim); }
+  .warning-inner { display: flex; gap: 2rem; align-items: flex-start; }
+  .warning-icon { font-size: 2rem; flex-shrink: 0; color: var(--amber); filter: drop-shadow(var(--glow-amb)); animation: warn-pulse 2s ease-in-out infinite; }
+  @keyframes warn-pulse {
+    0%,100% { filter: drop-shadow(0 0 8px #ffb02088); }
+    50%      { filter: drop-shadow(0 0 24px #ffb020cc); }
+  }
+  .warning-text h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--amber); letter-spacing: .05em; margin-bottom: .6rem; }
+  .warning-text p { font-family: 'Share Tech Mono', monospace; font-size: .8rem; color: var(--muted); line-height: 1.8; max-width: 600px; }
+
+  /* ─── FOOTER ─────────────────────────────────────────── */
+  footer {
+    position: relative; z-index: 1;
+    padding: 4rem 10vw;
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers items horizontally */
+    justify-content: center;
+    text-align: center;
+    gap: 1rem; /* Adds space between the logo, meta text, and icon */
+    padding: 2rem 0;
+  }
+  .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--ir); text-shadow: var(--glow-ir); letter-spacing: .05em; }
+  .footer-meta { font-family: 'Share Tech Mono', monospace; font-size: .7rem; color: var(--muted); line-height: 2; }
+  .footer-meta a { color: var(--ir); text-decoration: none; }
+  .footer-meta a:hover { text-decoration: underline; }
+
+  /* ─── GITHUB FOOTER LINK ─────────────────────────────── */
+  .footer-github {
+    display: flex; align-items: center; gap: .6rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: .75rem; color: var(--muted); text-decoration: none;
+    border: 1px solid var(--border); padding: .6rem 1.2rem;
+    transition: border-color .3s, color .3s;
+  }
+  .footer-github:hover { border-color: var(--ir); color: var(--ir); }
+  .footer-github i { font-size: 1.1rem; }
+
+  /* ─── RESPONSIVE ─────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .features-grid { grid-template-columns: 1fr; }
+    section { padding: 5rem 6vw; }
+    #hero   { padding: 6rem 6vw; }
+    .arch-diagram { grid-template-columns: 1fr; }
+    .arch-arrow { transform: rotate(90deg); margin: 1rem auto; }
+    footer { flex-direction: column; align-items: flex-start; }
+    .warning-inner { flex-direction: column; }
+  }
+</style>
 </head>
 <body>
-<div class="app">
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="logo"><div class="logo-dot"></div>LBD</div>
-  <div class="topbar-sep"></div>
-  <button id="connectBtn" onclick="toggleConnection()">Connect</button>
-  <span id="deviceName" class="device-name"></span>
-  <div class="topbar-right">
-    <span id="statusBadge" class="badge">Disconnected</span>
+<div id="cursor">
+  <div id="cursor-dot"></div>
+  <div id="cursor-ring"></div>
+</div>
+
+<div class="grid-bg"></div>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="ring"></div>
+  <div class="beam-core"></div>
+
+  <div class="hero-eyebrow">RP2040 · NEC Protocol · WebSerial · 38kHz</div>
+  <h1 class="hero-title">
+    <span>LBD</span><br>
+    Lott-<br>Bespitting<br>Diode
+  </h1>
+  <p class="hero-sub">
+    A high-intensity IR blaster built on the RP2040.<br>
+    Browser-native control. MOSFET-driven. Zero compromise.
+  </p>
+  <div class="hero-cta">
+    <a href="controller.html" class="btn btn-primary">→ Launch Controller</a>
+    <a href="#architecture" class="btn btn-ghost">↓ System Docs</a>
+  </div>
+  <div class="hero-github">
+    <a href="https://github.com/Chaos142/LottBespittingDiode" target="_blank" rel="noopener">
+      <i class="ti ti-brand-github" aria-hidden="true"></i>
+      View on GitHub
+    </a>
+  </div>
+
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker">
+    <span class="ticker-item"><span>◈</span> 38kHz Carrier Modulation</span>
+    <span class="ticker-item"><span>◈</span> NEC Protocol Engine</span>
+    <span class="ticker-item"><span>◈</span> WebSerial USB CDC</span>
+    <span class="ticker-item"><span>◈</span> MOSFET Gate Controller</span>
+    <span class="ticker-item"><span>◈</span> CircuitPython Firmware</span>
+    <span class="ticker-item"><span>◈</span> Flipper-IRDB Compatible</span>
+    <span class="ticker-item"><span>◈</span> GPL-3.0 Open Source</span>
+    <span class="ticker-item"><span>◈</span> High-Intensity IR Matrix</span>
+    <span class="ticker-item"><span>◈</span> 38kHz Carrier Modulation</span>
+    <span class="ticker-item"><span>◈</span> NEC Protocol Engine</span>
+    <span class="ticker-item"><span>◈</span> WebSerial USB CDC</span>
+    <span class="ticker-item"><span>◈</span> MOSFET Gate Controller</span>
+    <span class="ticker-item"><span>◈</span> CircuitPython Firmware</span>
+    <span class="ticker-item"><span>◈</span> Flipper-IRDB Compatible</span>
+    <span class="ticker-item"><span>◈</span> GPL-3.0 Open Source</span>
+    <span class="ticker-item"><span>◈</span> High-Intensity IR Matrix</span>
   </div>
 </div>
 
-<div class="main">
+<!-- ══ ARCHITECTURE ══ -->
+<section id="architecture">
+  <div class="section-label reveal">01 — System Architecture</div>
+  <h2 class="section-title reveal">Two Halves.<br>One Signal.</h2>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-header-label">Library</span>
-      <button class="btn-ghost btn btn-icon" title="New Folder" onclick="openNewFolderModal(null,event)"><i class="ti ti-folder-plus"></i></button>
-      <label class="btn-ghost btn btn-icon" title="Import .ir files" style="cursor:pointer;">
-        <i class="ti ti-file-import"></i>
-        <input type="file" accept=".ir" multiple style="display:none" onchange="importIRFiles(this.files,null,this)">
-      </label>
-      <label class="btn-ghost btn btn-icon" title="Import folder" style="cursor:pointer;">
-        <i class="ti ti-folder-up"></i>
-        <input type="file" webkitdirectory multiple style="display:none" onchange="importFolder(this.files,this)">
-      </label>
-      <button class="btn-ghost btn btn-icon" title="Close all folders" onclick="collapseAllFolders()"><i class="ti ti-folders"></i></button>
-      <button class="btn-ghost btn btn-icon" title="Clear library" onclick="openClearLibraryModal()"><i class="ti ti-trash"></i></button>
+  <div class="arch-diagram reveal">
+    <div class="arch-box reveal-left">
+      <div class="arch-box-title">Web Control Interface</div>
+      <div class="arch-item">Flipper-IRDB Directory</div>
+      <div class="arch-item">Raw Hex Compiler</div>
+      <div class="arch-item">WebSerial Pipeline</div>
+      <div class="arch-item">HTML5 / CSS3 / JS</div>
     </div>
-    <div class="sidebar-search">
-      <div class="search-wrap sidebar-search-wrap">
-        <i class="ti ti-search"></i>
-        <input type="text" id="sidebarSearch" placeholder="Search..." oninput="setSidebarSearch(this.value)">
+    <div class="arch-arrow reveal">
+      <div class="arch-arrow-line"></div>
+      USB<br>CDC
+    </div>
+    <div class="arch-box reveal-right">
+      <div class="arch-box-title">LBD Hardware Core</div>
+      <div class="arch-item">NEC Protocol Engine</div>
+      <div class="arch-item">MOSFET Gate Controller</div>
+      <div class="arch-item">38kHz PWM Modulator</div>
+      <div class="arch-item">RP2040 / CircuitPython</div>
+    </div>
+  </div>
+
+  <div class="arch-bottom reveal" style="transition-delay:.3s">
+    <div class="ir-matrix-label">↓ High-Intensity IR Matrix</div>
+    <div class="ir-leds">
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section id="features">
+  <div class="section-label reveal">02 — Core Features</div>
+  <h2 class="section-title reveal">Built Without<br>Compromise.</h2>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <i class="ti ti-antenna feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">NEC Protocol Synthesis</div>
+      <p class="feature-desc">Encodes raw hex address/command pairs into precise pulse-distance sequences compatible with any NEC IR receiver.</p>
+      <div class="feature-num">F.01</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-wave-sine feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">38kHz Carrier Modulation</div>
+      <p class="feature-desc">Hardware-accurate duty cycle generation passes standard consumer IR receiver filters every time — no flicker, no misses.</p>
+      <div class="feature-num">F.02</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-plug-connected feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">WebSerial Pipeline</div>
+      <p class="feature-desc">Control the device entirely from a browser over USB CDC. No drivers. No apps. Just a data-capable cable.</p>
+      <div class="feature-num">F.03</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-bolt feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">MOSFET Gate Driver</div>
+      <p class="feature-desc">High-side MOSFET switching delivers far more output current than GPIO-alone designs, driving a full IR LED array.</p>
+      <div class="feature-num">F.04</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-database feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">Flipper-IRDB Compatible</div>
+      <p class="feature-desc">Browse and transmit signals directly from the Flipper Zero IR database — the largest open-source IR signal library.</p>
+      <div class="feature-num">F.05</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-lock-open feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">GPL-3.0 Open Source</div>
+      <p class="feature-desc">Firmware, schematics, PCB layouts and software — all fully open. Study it. Fork it. Build on it.</p>
+      <div class="feature-num">F.06</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROTOCOL ══ -->
+<section id="protocol">
+  <div class="section-label reveal">03 — Firmware</div>
+  <h2 class="section-title reveal">The Signal,<br>Dissected.</h2>
+
+  <div class="protocol-vis reveal">
+    <div class="proto-row">
+      <div class="proto-label">Preamble</div>
+      <div class="proto-bar-wrap" style="--w:90%"><div class="proto-bar"></div></div>
+      <div class="proto-val">9000μs mark</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Space</div>
+      <div class="proto-bar-wrap" style="--w:50%"><div class="proto-bar" style="background:linear-gradient(90deg,var(--amber),var(--amber-dim))"></div></div>
+      <div class="proto-val">4500μs space</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Bit HIGH</div>
+      <div class="proto-bar-wrap" style="--w:18%"><div class="proto-bar"></div></div>
+      <div class="proto-val">560μs + 1690μs</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Bit LOW</div>
+      <div class="proto-bar-wrap" style="--w:8%"><div class="proto-bar" style="background:linear-gradient(90deg,var(--amber),var(--amber-dim))"></div></div>
+      <div class="proto-val">560μs + 560μs</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Stop</div>
+      <div class="proto-bar-wrap" style="--w:4%"><div class="proto-bar"></div></div>
+      <div class="proto-val">560μs mark</div>
+    </div>
+  </div>
+
+  <div class="waveform-wrap reveal">
+    <div class="waveform-label">NEC Pulse Train — <span>38kHz modulated carrier</span></div>
+    <svg class="waveform-svg" viewBox="0 0 900 80" preserveAspectRatio="none" height="80">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect x="10"  y="20" width="120" height="30" fill="#c850ff" filter="url(#glow)" opacity=".9"/>
+      <rect x="190" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="210" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="230" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="270" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="290" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="330" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="350" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="390" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="410" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="450" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="470" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="510" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="550" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="590" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="630" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="670" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="710" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="750" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="800" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <line x1="0" y1="50" x2="900" y2="50" stroke="#222" stroke-width="1"/>
+      <rect id="scan" x="-4" y="0" width="4" height="80" fill="rgba(200,80,255,.3)">
+        <animate attributeName="x" from="-4" to="904" dur="3s" repeatCount="indefinite"/>
+      </rect>
+    </svg>
+  </div>
+
+  <div class="code-block reveal" style="margin-top:2rem">
+    <div class="code-c"># 38kHz carrier initialization — CircuitPython / RP2040</div>
+    <br>
+    <span class="code-k">import</span> <span class="code-n">time, board, pwmio</span>
+    <br><br>
+    <span class="code-n">ir_pwm</span> = <span class="code-n">pwmio</span>.<span class="code-n">PWMOut</span>(
+      <span class="code-n">board</span>.<span class="code-n">GP16</span>,
+      <span class="code-k">frequency</span>=<span class="code-v">38000</span>,
+      <span class="code-k">duty_cycle</span>=<span class="code-v">0</span>
+    )
+    <br><br>
+    <span class="code-k">def</span> <span class="code-n">pulse_nec</span>(<span class="code-n">mark_us</span>, <span class="code-n">space_us</span>):
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">ir_pwm</span>.<span class="code-n">duty_cycle</span> = <span class="code-v">32768</span>  <span class="code-c"># 50% — carrier ON</span>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">time</span>.<span class="code-n">sleep_us</span>(<span class="code-n">mark_us</span>)
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">ir_pwm</span>.<span class="code-n">duty_cycle</span> = <span class="code-v">0</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-c"># carrier OFF</span>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">time</span>.<span class="code-n">sleep_us</span>(<span class="code-n">space_us</span>)
+  </div>
+</section>
+
+<!-- ══ SETUP ══ -->
+<section id="setup">
+  <div class="section-label reveal">04 — Setup</div>
+  <h2 class="section-title reveal">Flash it.<br>Launch it.</h2>
+
+  <div class="setup-steps">
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <div class="step-tag">DIY Build</div>
+        <h3>Enter Bootloader Mode</h3>
+        <p>Hold the BOOT button on the PCB and connect via a data-capable USB cable. Release once the drive mounts.</p>
       </div>
     </div>
-    <div class="sidebar-tree" id="sidebarTree"></div>
-    <div class="drag-hint" id="dragHint">Drop here to move to root</div>
-  </div>
-
-  <!-- CONTENT -->
-  <div class="content">
-    <div class="content-header">
-      <button class="tab-btn active" id="tab-library" onclick="switchTab('library')">Library</button>
-      <button class="tab-btn" id="tab-irdb" onclick="switchTab('irdb')">IRDB</button>
-      <button class="tab-btn" id="tab-transmit" onclick="switchTab('transmit')">Transmit</button>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <div class="step-tag">DIY Build</div>
+        <h3>Install CircuitPython</h3>
+        <p>The board mounts as <code style="color:var(--ir)">RPI-RP2</code>. Drop the CircuitPython .uf2 onto its root. It reboots as <code style="color:var(--ir)">CIRCUITPY</code>.</p>
+      </div>
     </div>
-    <div class="content-body">
-
-      <!-- LIBRARY (default) -->
-      <div id="pane-library">
-        <div class="library-view-tabs">
-          <button class="library-view-tab active" id="libraryView-overview" onclick="setLibraryView('overview')"><i class="ti ti-layout-grid"></i> Library</button>
-          <button class="library-view-tab" id="libraryView-favorites" onclick="setLibraryView('favorites')"><i class="ti ti-star"></i> Favorites</button>
-        </div>
-        <div class="search-wrap library-main-search" id="librarySearchWrap">
-          <i class="ti ti-search"></i>
-          <input type="text" id="librarySearch" placeholder="Search this folder..." oninput="setLibrarySearch(this.value)">
-        </div>
-        <div id="libraryContent"></div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <div class="step-tag">Both</div>
+        <h3>Deploy Firmware</h3>
+        <p>Copy <code style="color:var(--ir)">code.py</code> and <code style="color:var(--ir)">lib/</code> from <code>/firmware</code> onto the CIRCUITPY volume root.</p>
       </div>
-
-      <!-- IRDB -->
-      <div id="pane-irdb" style="display:none;">
-        <div class="section-hdr" style="margin-bottom:14px;">
-          <span class="section-title"><i class="ti ti-database" style="vertical-align:-2px;margin-right:6px;"></i>Flipper IRDB</span>
-          <a href="https://github.com/Lucaslhm/Flipper-IRDB" target="_blank" rel="noopener noreferrer" class="irdb-source-link">Lucaslhm/Flipper-IRDB <i class="ti ti-external-link" style="font-size:10px;"></i></a>
-        </div>
-        <div class="irdb-layout">
-          <div class="irdb-nav">
-            <div class="irdb-nav-search">
-              <div class="search-wrap" style="margin:0;">
-                <i class="ti ti-search"></i>
-                <input type="text" id="irdbSearch" placeholder="Search..." oninput="filterIRDB()" style="font-size:11px;padding:6px 8px 6px 28px;">
-              </div>
-            </div>
-            <div id="irdbTree" class="irdb-tree-body"></div>
-          </div>
-          <div id="irdbRemoteView" class="irdb-detail">
-            <div class="empty-state"><i class="ti ti-hand-click"></i><p>Select a remote from the list</p></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TRANSMIT -->
-      <div id="pane-transmit" style="display:none;">
-        <div class="card" style="margin-bottom:14px;">
-          <div class="card-title" style="justify-content:space-between;">
-            <span><i class="ti ti-history"></i> Transmit History</span>
-            <button class="btn btn-sm btn-ghost" onclick="clearHistory()"><i class="ti ti-trash"></i> Clear</button>
-          </div>
-          <div id="txHistory" class="hist-list"></div>
-        </div>
-        <div class="card">
-          <div class="card-title"><i class="ti ti-radio"></i> Manual Signal Transmitter</div>
-          <div class="row2">
-            <div class="field-group">
-              <label class="field-label">Address Hex</label>
-              <input type="text" id="addressInput" class="hex-input" placeholder="20 00 00 00" value="20 00 00 00" oninput="onHexInput(this)" maxlength="11" autocomplete="off" spellcheck="false">
-              <div class="field-err" id="addrErr"></div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Command Hex</label>
-              <input type="text" id="commandInput" class="hex-input" placeholder="09 00 00 00" value="09 00 00 00" oninput="onHexInput(this)" maxlength="11" autocomplete="off" spellcheck="false">
-              <div class="field-err" id="cmdErr"></div>
-            </div>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-accent" id="transmitBtn" onclick="transmitPayload()" disabled><i class="ti ti-send"></i> Blast Signal</button>
-            <button class="btn" onclick="toggleSaveForm()"><i class="ti ti-bookmark-plus"></i> Save to Library</button>
-          </div>
-          <div class="save-form" id="saveForm">
-            <div class="field-group">
-              <label class="field-label">Button Name</label>
-              <input type="text" id="saveNameInput" placeholder="e.g. Power" oninput="validateSaveFormName()">
-              <div class="field-err" id="saveNameErr"></div>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Description (optional)</label>
-              <textarea id="saveDescInput" placeholder="What does this button do?"></textarea>
-            </div>
-            <div class="field-group">
-              <label class="field-label">Save to Remote</label>
-              <select id="saveRemoteSelect" onchange="onSaveRemoteChange()">
-                <option value="__new__">+ Create new remote...</option>
-              </select>
-            </div>
-            <div id="saveNewRemoteFields" style="display:none;">
-              <div class="field-group">
-                <label class="field-label">Remote Name</label>
-                <input type="text" id="saveNewRemoteName" placeholder="e.g. Samsung TV" oninput="validateSaveRemoteName()">
-                <div class="field-err" id="saveNewRemoteNameErr"></div>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Folder (optional)</label>
-                <select id="saveNewRemoteFolderSelect"><option value="">/ Root</option></select>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;margin-top:4px;">
-              <button class="btn btn-green" onclick="saveManualSignal()"><i class="ti ti-check"></i> Create</button>
-              <button class="btn" onclick="toggleSaveForm()">Cancel</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
-
-    <!-- PERSISTENT LOG BAR -->
-    <div class="log-bar">
-      <div class="log-bar-header" onclick="toggleLogBar()">
-        <i class="ti ti-terminal-2" style="font-size:13px;color:var(--text3);flex-shrink:0;"></i>
-        <span class="log-bar-title">Serial Logs</span>
-        <span id="logBadge" class="log-badge"></span>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="clearConsole(event)" title="Clear logs" style="margin-left:auto;margin-right:4px;"><i class="ti ti-trash"></i></button>
-        <i class="ti ti-chevron-up" id="logChevron" style="font-size:12px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;"></i>
-      </div>
-      <div class="log-bar-body" id="logBarBody">
-        <div id="terminal" class="terminal"><span class="term-sys">Awaiting pipeline initialization...</span></div>
+    <div class="step reveal">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <div class="step-tag">Both</div>
+        <h3>Launch the Interface</h3>
+        <p>WebSerial requires a secure context. Serve the UI locally then open the controller.</p>
+        <div class="code-block">
+          <span class="code-c"># from the software directory</span><br>
+          python -m http.server <span class="code-v">8080</span><br>
+          <span class="code-c"># then open → </span><span class="code-s">http://localhost:8080</span>
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-</div>
-</div>
-
-<!-- DRAG GHOST -->
-<div id="dragGhost" class="drag-ghost"></div>
-
-<!-- MODAL: Folder -->
-<div class="modal-overlay" id="folderModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-folder-plus"></i><span id="folderModalTitle">New Folder</span></div>
-    <div class="field-group">
-      <label class="field-label">Folder Name</label>
-      <input type="text" id="folderNameInput" placeholder="e.g. Living Room" oninput="validateFolderName()" onkeydown="if(event.key==='Enter')confirmFolder()">
-      <div class="field-err" id="folderNameErr"></div>
+<!-- ══ WARNING ══ -->
+<section id="warning">
+  <div class="warning-inner reveal">
+    <div class="warning-icon">
+      <i class="ti ti-alert-triangle" aria-hidden="true"></i>
     </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeFolderModal()">Cancel</button>
-      <button class="btn btn-accent" onclick="confirmFolder()">Create</button>
+    <div class="warning-text">
+      <h3>Strictly Prohibited for Illegal Use</h3>
+      <p>
+        This project is designed solely for personal engineering research, hardware prototyping, and authorized testing.
+        Only operate this device on equipment you personally own or have explicit permission to control.
+        The creator assumes no liability for misuse, property disruption, or equipment damage.
+        By using this project you take full responsibility for your actions.
+      </p>
     </div>
   </div>
-</div>
+</section>
 
-<!-- MODAL: Rename -->
-<div class="modal-overlay" id="renameModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-pencil"></i>Rename</div>
-    <div class="field-group">
-      <label class="field-label">New Name</label>
-      <input type="text" id="renameInput" oninput="validateRenameInput()" onkeydown="if(event.key==='Enter')confirmRename()">
-      <div class="field-err" id="renameErr"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeRenameModal()">Cancel</button>
-      <button class="btn btn-accent" id="renameConfirmBtn" onclick="confirmRename()">Rename</button>
-    </div>
+<!-- ══ CTA ══ -->
+<section style="text-align:center; padding: 8rem 10vw;">
+  <div class="section-label reveal" style="justify-content:center">Ready</div>
+  <h2 class="section-title reveal" style="font-size:clamp(3rem,9vw,8rem)">Transmit.</h2>
+  <p class="reveal" style="font-family:'Share Tech Mono',monospace;color:var(--muted);margin:1rem auto 3rem;max-width:400px;font-size:.85rem;line-height:1.8">
+    Connect your hardware, open the controller, and start sending signals.
+  </p>
+  <a href="controller.html" class="btn btn-primary reveal" style="font-size:1rem;padding:1.2rem 3.5rem;">
+    → Open Controller
+  </a>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-logo">LBD</div>
+  <div class="footer-meta">
+    Copyright © 2026 Joshua Felder (Chaos) · <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GPL-3.0 License</a><br>
+    Named for Mrs. Lott and her classroom projector. No Spanish teachers were harmed in the making of this project.
   </div>
-</div>
+  <a href="https://github.com/Chaos142/LottBespittingDiode" target="_blank" rel="noopener" class="footer-github">
+    <i class="ti ti-brand-github" aria-hidden="true"></i>
+    GitHub
+  </a>
+</footer>
 
-<!-- MODAL: Delete -->
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-trash" style="color:var(--red);"></i><span id="deleteModalTitle">Delete?</span></div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:4px;" id="deleteModalMsg">This cannot be undone.</p>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
-      <button class="btn btn-danger" onclick="confirmDelete()"><i class="ti ti-trash"></i> Delete</button>
-    </div>
-  </div>
-</div>
+<script>
+  const dot  = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+  function animCursor() {
+    dot.style.left  = mx + 'px'; dot.style.top  = my + 'px';
+    rx += (mx - rx) * .12;      ry += (my - ry) * .12;
+    ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    requestAnimationFrame(animCursor);
+  }
+  animCursor();
 
-<!-- MODAL: Clear Library -->
-<div class="modal-overlay" id="clearLibraryModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear Entire Library?</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Permanently deletes all folders, remotes, and buttons. Cannot be undone.</p>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeClearLibraryModal()">Cancel</button>
-      <button class="btn btn-danger" id="clearLibraryConfirmBtn" onclick="confirmClearLibrary()"><i class="ti ti-trash"></i> Clear Library</button>
-    </div>
-  </div>
-</div>
+  const revealEls = document.querySelectorAll('.reveal, .reveal-left, .reveal-right');
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
 
-<!-- MODAL: Clear Favorites -->
-<div class="modal-overlay" id="clearFavoritesModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear All Favorites?</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Removes all remote and signal favorites. This does not delete your library items.</p>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeClearFavoritesModal()">Cancel</button>
-      <button class="btn btn-danger" id="clearFavoritesConfirmBtn" onclick="confirmClearFavorites()"><i class="ti ti-eraser"></i> Clear Favorites</button>
-    </div>
-  </div>
-</div>
+  const bars = document.querySelectorAll('.proto-bar-wrap');
+  const barIO = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('animate'); barIO.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  bars.forEach(b => barIO.observe(b));
 
-<!-- MODAL: IRDB Folder Import -->
-<div class="modal-overlay" id="irdbFolderModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-folder-down"></i>Import Folder from IRDB</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbFolderModalDesc">Import all remotes from this folder.</p>
-    <div class="field-group">
-      <label class="field-label">Save into Folder</label>
-      <div id="irdbFolderDestTree" class="folder-picker-tree"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeIrdbFolderModal()">Cancel</button>
-      <button class="btn btn-accent" id="irdbFolderImportBtn" onclick="confirmIRDBFolderImport()"><i class="ti ti-download"></i> Import All</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL: IRDB Remote Import -->
-<div class="modal-overlay" id="irdbRemoteModal">
-  <div class="modal">
-    <div class="modal-title"><i class="ti ti-device-remote"></i>Import Remote from IRDB</div>
-    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbRemoteModalDesc">Import selected remote.</p>
-    <div class="field-group">
-      <label class="field-label">Save into Folder</label>
-      <div id="irdbRemoteDestTree" class="folder-picker-tree"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeIrdbRemoteModal()">Cancel</button>
-      <button class="btn btn-accent" id="irdbRemoteImportBtn" onclick="confirmIRDBRemoteImport()"><i class="ti ti-download"></i> Import</button>
-    </div>
-  </div>
-</div>
-
-<script src="script.js"></script>
+  const rings = document.querySelectorAll('.ring');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    rings.forEach((r, i) => { r.style.transform = `translate(50%,-50%) translateY(${y * (i + 1) * .04}px)`; });
+  }, { passive: true });
+</script>
 </body>
 </html>

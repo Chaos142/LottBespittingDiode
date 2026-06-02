@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LBD Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo"><div class="logo-dot"></div>LBD</div>
+  <div class="topbar-sep"></div>
+  <button id="connectBtn" onclick="toggleConnection()">Connect</button>
+  <span id="deviceName" class="device-name"></span>
+  <div class="topbar-right">
+    <span id="statusBadge" class="badge">Disconnected</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span class="sidebar-header-label">Library</span>
+      <button class="btn-ghost btn btn-icon" title="New Folder" onclick="openNewFolderModal(null,event)"><i class="ti ti-folder-plus"></i></button>
+      <label class="btn-ghost btn btn-icon" title="Import .ir files" style="cursor:pointer;">
+        <i class="ti ti-file-import"></i>
+        <input type="file" accept=".ir" multiple style="display:none" onchange="importIRFiles(this.files,null,this)">
+      </label>
+      <label class="btn-ghost btn btn-icon" title="Import folder" style="cursor:pointer;">
+        <i class="ti ti-folder-up"></i>
+        <input type="file" webkitdirectory multiple style="display:none" onchange="importFolder(this.files,this)">
+      </label>
+      <button class="btn-ghost btn btn-icon" title="Close all folders" onclick="collapseAllFolders()"><i class="ti ti-folders"></i></button>
+      <button class="btn-ghost btn btn-icon" title="Clear library" onclick="openClearLibraryModal()"><i class="ti ti-trash"></i></button>
+    </div>
+    <div class="sidebar-search">
+      <div class="search-wrap sidebar-search-wrap">
+        <i class="ti ti-search"></i>
+        <input type="text" id="sidebarSearch" placeholder="Search..." oninput="setSidebarSearch(this.value)">
+      </div>
+    </div>
+    <div class="sidebar-tree" id="sidebarTree"></div>
+    <div class="drag-hint" id="dragHint">Drop here to move to root</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="content-header">
+      <button class="tab-btn active" id="tab-library" onclick="switchTab('library')">Library</button>
+      <button class="tab-btn" id="tab-irdb" onclick="switchTab('irdb')">IRDB</button>
+      <button class="tab-btn" id="tab-transmit" onclick="switchTab('transmit')">Transmit</button>
+    </div>
+    <div class="content-body">
+
+      <!-- LIBRARY (default) -->
+      <div id="pane-library">
+        <div class="library-view-tabs">
+          <button class="library-view-tab active" id="libraryView-overview" onclick="setLibraryView('overview')"><i class="ti ti-layout-grid"></i> Library</button>
+          <button class="library-view-tab" id="libraryView-favorites" onclick="setLibraryView('favorites')"><i class="ti ti-star"></i> Favorites</button>
+        </div>
+        <div class="search-wrap library-main-search" id="librarySearchWrap">
+          <i class="ti ti-search"></i>
+          <input type="text" id="librarySearch" placeholder="Search this folder..." oninput="setLibrarySearch(this.value)">
+        </div>
+        <div id="libraryContent"></div>
+      </div>
+
+      <!-- IRDB -->
+      <div id="pane-irdb" style="display:none;">
+        <div class="section-hdr" style="margin-bottom:14px;">
+          <span class="section-title"><i class="ti ti-database" style="vertical-align:-2px;margin-right:6px;"></i>Flipper IRDB</span>
+          <a href="https://github.com/Lucaslhm/Flipper-IRDB" target="_blank" rel="noopener noreferrer" class="irdb-source-link">Lucaslhm/Flipper-IRDB <i class="ti ti-external-link" style="font-size:10px;"></i></a>
+        </div>
+        <div class="irdb-layout">
+          <div class="irdb-nav">
+            <div class="irdb-nav-search">
+              <div class="search-wrap" style="margin:0;">
+                <i class="ti ti-search"></i>
+                <input type="text" id="irdbSearch" placeholder="Search..." oninput="filterIRDB()" style="font-size:11px;padding:6px 8px 6px 28px;">
+              </div>
+            </div>
+            <div id="irdbTree" class="irdb-tree-body"></div>
+          </div>
+          <div id="irdbRemoteView" class="irdb-detail">
+            <div class="empty-state"><i class="ti ti-hand-click"></i><p>Select a remote from the list</p></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSMIT -->
+      <div id="pane-transmit" style="display:none;">
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-title" style="justify-content:space-between;">
+            <span><i class="ti ti-history"></i> Transmit History</span>
+            <button class="btn btn-sm btn-ghost" onclick="clearHistory()"><i class="ti ti-trash"></i> Clear</button>
+          </div>
+          <div id="txHistory" class="hist-list"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="ti ti-radio"></i> Manual Signal Transmitter</div>
+          <div class="row2">
+            <div class="field-group">
+              <label class="field-label">Address Hex</label>
+              <input type="text" id="addressInput" class="hex-input" placeholder="20 00 00 00" value="20 00 00 00" oninput="onHexInput(this)" maxlength="11" autocomplete="off" spellcheck="false">
+              <div class="field-err" id="addrErr"></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Command Hex</label>
+              <input type="text" id="commandInput" class="hex-input" placeholder="09 00 00 00" value="09 00 00 00" oninput="onHexInput(this)" maxlength="11" autocomplete="off" spellcheck="false">
+              <div class="field-err" id="cmdErr"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-accent" id="transmitBtn" onclick="transmitPayload()" disabled><i class="ti ti-send"></i> Blast Signal</button>
+            <button class="btn" onclick="toggleSaveForm()"><i class="ti ti-bookmark-plus"></i> Save to Library</button>
+          </div>
+          <div class="save-form" id="saveForm">
+            <div class="field-group">
+              <label class="field-label">Button Name</label>
+              <input type="text" id="saveNameInput" placeholder="e.g. Power" oninput="validateSaveFormName()">
+              <div class="field-err" id="saveNameErr"></div>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Description (optional)</label>
+              <textarea id="saveDescInput" placeholder="What does this button do?"></textarea>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Save to Remote</label>
+              <select id="saveRemoteSelect" onchange="onSaveRemoteChange()">
+                <option value="__new__">+ Create new remote...</option>
+              </select>
+            </div>
+            <div id="saveNewRemoteFields" style="display:none;">
+              <div class="field-group">
+                <label class="field-label">Remote Name</label>
+                <input type="text" id="saveNewRemoteName" placeholder="e.g. Samsung TV" oninput="validateSaveRemoteName()">
+                <div class="field-err" id="saveNewRemoteNameErr"></div>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Folder (optional)</label>
+                <select id="saveNewRemoteFolderSelect"><option value="">/ Root</option></select>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:4px;">
+              <button class="btn btn-green" onclick="saveManualSignal()"><i class="ti ti-check"></i> Create</button>
+              <button class="btn" onclick="toggleSaveForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PERSISTENT LOG BAR -->
+    <div class="log-bar">
+      <div class="log-bar-header" onclick="toggleLogBar()">
+        <i class="ti ti-terminal-2" style="font-size:13px;color:var(--text3);flex-shrink:0;"></i>
+        <span class="log-bar-title">Serial Logs</span>
+        <span id="logBadge" class="log-badge"></span>
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="clearConsole(event)" title="Clear logs" style="margin-left:auto;margin-right:4px;"><i class="ti ti-trash"></i></button>
+        <i class="ti ti-chevron-up" id="logChevron" style="font-size:12px;color:var(--text3);transition:transform 0.2s;flex-shrink:0;"></i>
+      </div>
+      <div class="log-bar-body" id="logBarBody">
+        <div id="terminal" class="terminal"><span class="term-sys">Awaiting pipeline initialization...</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- DRAG GHOST -->
+<div id="dragGhost" class="drag-ghost"></div>
+
+<!-- MODAL: Folder -->
+<div class="modal-overlay" id="folderModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-folder-plus"></i><span id="folderModalTitle">New Folder</span></div>
+    <div class="field-group">
+      <label class="field-label">Folder Name</label>
+      <input type="text" id="folderNameInput" placeholder="e.g. Living Room" oninput="validateFolderName()" onkeydown="if(event.key==='Enter')confirmFolder()">
+      <div class="field-err" id="folderNameErr"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeFolderModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="confirmFolder()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Rename -->
+<div class="modal-overlay" id="renameModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-pencil"></i>Rename</div>
+    <div class="field-group">
+      <label class="field-label">New Name</label>
+      <input type="text" id="renameInput" oninput="validateRenameInput()" onkeydown="if(event.key==='Enter')confirmRename()">
+      <div class="field-err" id="renameErr"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeRenameModal()">Cancel</button>
+      <button class="btn btn-accent" id="renameConfirmBtn" onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Delete -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-trash" style="color:var(--red);"></i><span id="deleteModalTitle">Delete?</span></div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:4px;" id="deleteModalMsg">This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()"><i class="ti ti-trash"></i> Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Clear Library -->
+<div class="modal-overlay" id="clearLibraryModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear Entire Library?</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Permanently deletes all folders, remotes, and buttons. Cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeClearLibraryModal()">Cancel</button>
+      <button class="btn btn-danger" id="clearLibraryConfirmBtn" onclick="confirmClearLibrary()"><i class="ti ti-trash"></i> Clear Library</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Clear Favorites -->
+<div class="modal-overlay" id="clearFavoritesModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-alert-triangle" style="color:var(--red);"></i>Clear All Favorites?</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:10px;line-height:1.6;">Removes all remote and signal favorites. This does not delete your library items.</p>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeClearFavoritesModal()">Cancel</button>
+      <button class="btn btn-danger" id="clearFavoritesConfirmBtn" onclick="confirmClearFavorites()"><i class="ti ti-eraser"></i> Clear Favorites</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IRDB Folder Import -->
+<div class="modal-overlay" id="irdbFolderModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-folder-down"></i>Import Folder from IRDB</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbFolderModalDesc">Import all remotes from this folder.</p>
+    <div class="field-group">
+      <label class="field-label">Save into Folder</label>
+      <div id="irdbFolderDestTree" class="folder-picker-tree"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeIrdbFolderModal()">Cancel</button>
+      <button class="btn btn-accent" id="irdbFolderImportBtn" onclick="confirmIRDBFolderImport()"><i class="ti ti-download"></i> Import All</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: IRDB Remote Import -->
+<div class="modal-overlay" id="irdbRemoteModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-device-remote"></i>Import Remote from IRDB</div>
+    <p style="color:var(--text2);font-size:13px;margin-bottom:14px;line-height:1.5;" id="irdbRemoteModalDesc">Import selected remote.</p>
+    <div class="field-group">
+      <label class="field-label">Save into Folder</label>
+      <div id="irdbRemoteDestTree" class="folder-picker-tree"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeIrdbRemoteModal()">Cancel</button>
+      <button class="btn btn-accent" id="irdbRemoteImportBtn" onclick="confirmIRDBRemoteImport()"><i class="ti ti-download"></i> Import</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
