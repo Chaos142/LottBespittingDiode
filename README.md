@@ -1,55 +1,71 @@
 # Lott-Bespitting Diode (LBD)
 
-The **Lott-Bespitting Diode (LBD)** is a custom, high-intensity infrared (IR) blaster built on the RP2040 microcontroller. It uses a high-output, MOSFET-driven IR array to transmit standard 38kHz infrared signals (like the NEC protocol) directly from a browser interface over a USB serial connection.
+A high-intensity IR blaster built on the RP2040. Browser-native control over WebSerial, MOSFET-driven IR output, 38kHz NEC modulation. Fully open source.
 
 Named for Mrs. Lott, the worst teacher I ever had, and her classroom projector.
 
 ---
 
-# 1. System Architecture Overview
+## Features
 
-The system splits functionality symmetrically between an on-board hardware driver and a web-based serial terminal pipeline.
+- **Web Controller**: Full single-page app to manage IR remotes, browse the Flipper-IRDB, compose NEC signals, and transmit over WebSerial
+- **In-Browser Schematic Viewer**: Browse all hardware schematics directly on the landing page via KiCanvas
+- **Auto-Generated BOM**: Bill of materials extracted from KiCad schematics and embedded in the landing page, updated on every push
+- **IRDB Integration**: Browse and import from [Lucaslhm/Flipper-IRDB](https://github.com/Lucaslhm/Flipper-IRDB) directly from the controller
+- **NEC Protocol Engine**: CircuitPython firmware with hardware-timed 38kHz carrier modulation
+- **Library Management**: Organize remotes and signals in folders with drag-and-drop, favorites, and inline editing
 
-```text
-+---------------------------------+             +----------------------------------+
-|      Web Control Interface      |             |         LBD Hardware Core        |
-|  (HTML5 / CSS3 Themes / JS)     |             |  (RP2040 MCU / CircuitPython)    |
-|                                 |             |                                  |
-|   +-------------------------+   |  WebSerial  |   +--------------------------+   |
-|   |  Flipper-IRDB Directory |   |   Pipeline  |   |  NEC Protocol Engine     |   |
-|   +-------------------------+   |             |   +--------------------------+   |
-|                |                |  (USB CDC)  |                |                 |
-|                v                |             |                v                 |
-|   +-------------------------+   |  =======>   |   +--------------------------+   |
-|   |  Raw Hex Compiler       |   |             |   |  MOSFET Gate Controller  |   |
-|   +-------------------------+   |             |   +--------------------------+   |
-+---------------------------------+             +----------------------------------+
-                                                          |
-                                                          v
-                                           +--------------------------+
-                                           | High-Intensity IR Matrix |
-                                           +--------------------------+
+---
+
+## Project Structure
+
+```
+app/                  # Web front-end
+  index.html          # Landing page (hero, BOM, schematic viewer, docs)
+  index.css           # Landing page styles (dark theme, purple/amber)
+  index.js            # Landing page interactivity (tabs, viewer)
+  controller.html     # WebSerial controller app
+  style.css           # Controller styles
+  script.js           # Controller logic (serial, library, IRDB, transmit)
+  three-scene.js      # Three.js particle background
+
+firmware/             # CircuitPython firmware
+  code.py             # NEC protocol engine over USB serial
+  lib/                # Runtime libraries
+
+hardware/             # KiCad hardware design
+  LBD.kicad_sch       # Main schematic (RP2040, MOSFET, IR matrix)
+  power.kicad_sch     # Power regulation (TPSM828214SILR)
+  flash.kicad_sch     # External flash (W25Q128)
+  usb.kicad_sch       # USB-C (USB4155)
+  prototype.kicad_sch # Breadboard/perfboard prototype variant
+  LBD.kicad_pcb       # PCB layout
+
+scripts/              # Utility scripts
+  generate_bom.py     # Auto-generates BOM HTML from KiCad schematics
+  ir_tester.py        # Standalone IR transmission test
 ```
 
 ---
 
-# 2. Hardware Design & Schematics
+## Hardware
 
-*Schematic diagrams, 3D PCB renders, and assembly images will be uploaded once complete.*
+> The embedded PCB design isn't finalized yet. Build the prototype on a breadboard or perfboard using the [prototype schematic](hardware/prototype.kicad_sch).
+
+The full design targets a custom PCB with an RP2040, MOSFET-switched IR LED array, USB-C, and external flash. Five KiCad schematics cover the main board, power regulation, flash memory, USB connector, and a simplified prototype variant.
 
 ---
 
-# 3. Embedded Firmware Architecture
+## Firmware
 
-The firmware layer runs on top of a an internal clock loop to translate explicit string structures into precise, microsecond-timed hardware actions.
+The [CircuitPython firmware](firmware/code.py) implements a standard NEC protocol engine:
 
-## Core Operations
-
-* **NEC Protocol Synthesis:** Encodes raw hexadecimal data pairs (Address and Command) into standard NEC pulse-distance sequences
-* **Carrier Modulation:** Generates a consistent, hardware-accurate 38kHz duty cycle inside the transmission window to pass standard consumer IR receiver filters
-* **USB Data Ingestion:** Runs a non-blocking serial listen routine tracking inbound raw string inputs
-
-## Example Firmware Loop
+- 38kHz carrier modulation via `pulseio.PulseOut`
+- Listens for 4-byte NEC arrays over USB serial
+- Drives a status LED and the IR output on GPIO
+- Header: 9000&micro;s mark / 4500&micro;s space
+- Bit coding: 560&micro;s mark + 1690&micro;s (1) or 560&micro;s (0)
+- Compatible with any NEC IR receiver
 
 ```python
 import time
@@ -71,106 +87,65 @@ def pulse_nec(mark_us, space_us):
 
 ---
 
-# 4. Setup & Flash Instructions
+## Web Interface
 
-Depending on how you acquired your LBD system, select the appropriate configuration pipeline below.
+Two pages are served via GitHub Pages:
 
-## Option A — Plug-and-Play (Pre-Assembled Hardware)
-
-If you received an assembled unit, the firmware layer is pre-flashed.
-
-1. Plug the hardware unit directly into a USB port on your machine
-2. Launch the control interface panel
-3. Utilize the hosted web environment or follow the Control Interface instructions below
-
-## Option B — From-Scratch Assembly (DIY Build)
-
-### Step 1 — Enter Bootloader Mode
-
-Press and hold the **BOOT** button on the PCB, then connect it to your computer via a data-capable USB cable.
-
-Release the button once the drive mounts.
-
-### Step 2 — Mount Volume
-
-A new mass storage volume named `RPI-RP2` will appear.
-
-### Step 3 — Install CircuitPython
-
-Drag and drop the appropriate CircuitPython `.uf2` payload directly onto the root directory of the `RPI-RP2` volume.
-
-The board will automatically reboot and remount as:
-
-```text
-CIRCUITPY
-```
-
-### Step 4 — Deploy Application Code
-
-Open the `/firmware` directory within this project workspace.
-
-Copy the following onto the root of the `CIRCUITPY` volume:
-
-* `code.py`
-* `lib/`
+| Page | Description |
+|---|---|
+| **Landing Page** (`index.html`) | Project overview, BOM table, KiCanvas schematic viewer, architecture docs, features, setup guide |
+| **Controller** (`controller.html`) | Full WebSerial-based remote control app with library management, IRDB browser, signal composer, and transmit history |
 
 ---
 
-# 5. Control Interface Access
+## Setup & Flash
 
-## Option A — Hosted Web Interface (Recommended)
+> Build the prototype on a breadboard or perfboard using the [prototype schematic](hardware/prototype.kicad_sch).
 
-The latest stable version of the control panel is available through GitHub Pages:
+<details>
+<summary><strong>DIY / Prototype Only</strong>: Steps 1 and 2 (skip if you have a pre-assembled unit)</summary>
 
-[Launch LBD Control Interface](https://chaos142.github.io/LottBespittingDiode/)
+### Step 1: Enter Bootloader Mode
 
-Simply connect the LBD hardware via USB, open the page in a Chromium-based browser, and use the Connect button to establish a Web Serial session.
+Press and hold the **BOOT** button on the board, then connect it to your computer via a data-capable USB cable. Release the button once the drive mounts.
 
----
+### Step 2: Install CircuitPython
 
-## Option B — Local Development Interface
+A mass storage volume named `RPI-RP2` will appear. Drag and drop the appropriate CircuitPython `.uf2` payload onto its root directory. The board will automatically reboot and remount as `CIRCUITPY`.
 
-Because the Web Serial API requires a secure context, you cannot run the interface directly from a `file://` URL.
+</details>
 
-### Launch Local Development Server
+### Step 3: Deploy Firmware
+
+Copy the contents of `firmware/` onto the `CIRCUITPY` volume root:
+
+- `code.py`
+- `lib/`
+
+### Step 4: Plug It In & Open the Controller
+
+Keep the device connected via USB, then open the [web controller](https://chaos142.github.io/LottBespittingDiode/controller.html) in a Chromium-based browser. Click **Connect** to establish the WebSerial session.
+
+To run locally (required for development):
 
 ```bash
-# Clone the repository
 git clone https://github.com/Chaos142/LottBespittingDiode.git
-
-# Enter the project directory
 cd LottBespittingDiode
-
-# Start a local web server (example using Python)
 python -m http.server 8080
-
-# Open in your browser
-http://localhost:8080
+# open http://localhost:8080
 ```
 
 ---
 
-# 6. License & Terms of Use
-
-## Disclaimer
+## License & Terms of Use
 
 > [!CAUTION]
 > **STRICTLY PROHIBITED FOR ILLEGAL USE**
-> 
-> This project is designed and intended solely for personal engineering research, hardware prototyping, and authorized testing.
-> 
-> You may only operate this device on infrared-receiving equipment that you personally own, or where you have received explicit permission from the equipment owner.
-> 
-> The creator of this project assumes absolutely no responsibility or liability for any misuse, property disruption, equipment damage, or infractions caused by the operation or assembly of this hardware and software. By using this project, you agree to take full responsibility for your actions and use it responsibly and legally.
+>
+> This project is designed solely for personal engineering research, hardware prototyping, and authorized testing.
+> You may only operate this device on equipment you personally own or have explicit permission to control.
+> The creator assumes no liability for misuse, property disruption, or equipment damage.
 
-## License
+This project (software, firmware, schematics, PCB layouts, and documentation) is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
-This project—including all software, firmware, schematics, PCB layouts, and documentation—is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
-
-Copyright (c) 2026 Josh Felder (Chaos). All Rights Reserved.
-
-### Core Terms:
-*   **Open Access & Freedom:** Anyone is free to run, study, modify, and distribute this software and hardware design documentation.
-*   **Copyleft Protection:** If anyone modifies these files or builds a derivative project and distributes it (either as code or as physical hardware), they **must** make their modified source code and design layouts publicly available under the GPL-3.0.
-*   **Commercial Use:** Commercial manufacturing and distribution are permitted, provided the distributor complies fully with the open-source disclosure requirements of the GPL-3.0.
-*   **No Warranty:** This project is provided "as is" without any warranty of any kind.
+Copyright &copy; 2026 Josh Felder (Chaos). All Rights Reserved.

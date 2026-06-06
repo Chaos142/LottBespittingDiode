@@ -644,9 +644,14 @@
         "filename": "LBD.kicad_sch",
         "name": "LBD",
         "uuid": "02a771dc-3dd8-4911-bfb9-5380c79ee9e9"
+      },
+      {
+        "filename": "prototype.kicad_sch",
+        "name": "Prototype",
+        "uuid": "79b525c5-f9c9-456f-9ae1-5cb9eb4f2523"
       }
     ],
-    "used_designators": "",
+    "used_designators": "U2,D1,#PWR5-6,#PWR12-13,R1-2,Q1",
     "variants": []
   },
   "sheets": [
@@ -665,6 +670,10 @@
     [
       "0c2041eb-daed-4eed-ade6-f8635714311d",
       "Flash"
+    ],
+    [
+      "79b525c5-f9c9-456f-9ae1-5cb9eb4f2523",
+      "Prototype"
     ]
   ],
   "text_variables": {},

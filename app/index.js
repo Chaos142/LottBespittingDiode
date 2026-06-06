@@ -52,7 +52,8 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
     'LBD.kicad_sch',
     'power.kicad_sch',
     'flash.kicad_sch',
-    'usb.kicad_sch'
+    'usb.kicad_sch',
+    'prototype.kicad_sch'
   ];
   var prefix = '../hardware/';
   var sheets = sheetNames.map(function(n) { return prefix + n; });

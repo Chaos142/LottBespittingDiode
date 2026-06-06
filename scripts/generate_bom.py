@@ -222,7 +222,7 @@ def replace_table(content, bom_html):
 
 
 def main():
-    sch_files = sorted(HARDWARE_DIR.glob('*.kicad_sch'))
+    sch_files = sorted(f for f in HARDWARE_DIR.glob('*.kicad_sch') if f.name != 'prototype.kicad_sch')
     if not sch_files:
         print("No .kicad_sch files found in hardware/")
         sys.exit(1)

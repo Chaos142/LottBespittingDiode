@@ -312,19 +312,24 @@
   <div class="section-label reveal">04 — Setup</div>
   <h2 class="section-title reveal">Flash it.<br>Launch it.</h2>
 
+  <div class="reveal" style="margin-bottom:2rem;font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--muted);line-height:1.7;border:1px solid var(--ir-dim);padding:1rem;background:rgba(200,80,255,.03)">
+    <span class="step-tag" style="margin-bottom:.6rem">Prototype</span><br>
+    The embedded PCB isn't finalized yet — build the prototype on a breadboard or perfboard using the schematic <a href="https://github.com/Chaos142/LottBespittingDiode/tree/main/hardware/prototype.kicad_sch" target="_blank" rel="noopener" style="color:var(--ir);text-decoration:none">in the repo</a>. Flash the RP2040-Zero with the CircuitPython firmware, plug it into your computer via USB, and open the <a href="controller.html" style="color:var(--ir);text-decoration:none">web controller</a>.
+  </div>
+
   <div class="setup-steps">
+    <div class="setup-col-header">DIY / Prototype Only</div>
+    <div class="setup-col-header">All Builds</div>
     <div class="step reveal">
       <div class="step-num">01</div>
       <div class="step-content">
-        <div class="step-tag">DIY Build</div>
         <h3>Enter Bootloader Mode</h3>
-        <p>Hold the BOOT button on the PCB and connect via a data-capable USB cable. Release once the drive mounts.</p>
+        <p>Hold the BOOT button on the RP2040 board and connect via a data-capable USB cable. Release once the drive mounts.</p>
       </div>
     </div>
     <div class="step reveal">
       <div class="step-num">02</div>
       <div class="step-content">
-        <div class="step-tag">DIY Build</div>
         <h3>Install CircuitPython</h3>
         <p>The board mounts as <code style="color:var(--ir)">RPI-RP2</code>. Drop the CircuitPython .uf2 onto its root. It reboots as <code style="color:var(--ir)">CIRCUITPY</code>.</p>
       </div>
@@ -332,7 +337,6 @@
     <div class="step reveal">
       <div class="step-num">03</div>
       <div class="step-content">
-        <div class="step-tag">Both</div>
         <h3>Deploy Firmware</h3>
         <p>Copy <code style="color:var(--ir)">code.py</code> and <code style="color:var(--ir)">lib/</code> from <code>/firmware</code> onto the CIRCUITPY volume root.</p>
       </div>
@@ -340,14 +344,8 @@
     <div class="step reveal">
       <div class="step-num">04</div>
       <div class="step-content">
-        <div class="step-tag">Both</div>
-        <h3>Launch the Interface</h3>
-        <p>WebSerial requires a secure context. Serve the UI locally then open the controller.</p>
-        <div class="code-block">
-          <span class="code-c"># from the software directory</span><br>
-          python -m http.server <span class="code-v">8080</span><br>
-          <span class="code-c"># then open → </span><span class="code-s">http://localhost:8080</span>
-        </div>
+        <h3>Plug It In & Open the Controller</h3>
+        <p>Connect the device to your computer via USB, then open the <a href="controller.html" style="color:var(--ir);text-decoration:none">web controller</a> in a Chromium-based browser. Click <strong>Connect</strong> to establish the WebSerial session.</p>
       </div>
     </div>
   </div>
