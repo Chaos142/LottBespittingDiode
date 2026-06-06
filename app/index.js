@@ -48,20 +48,50 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
   var nextBtn = document.getElementById('sch-next');
   if (!ph || !viewer || !label || !embed || !prevBtn || !nextBtn) return;
 
-  // comment out the contents of this array to test the placeholder
-  var sheets = [
-    
-    '../hardware/LBD.kicad_sch',
-    '../hardware/power.kicad_sch',
-    '../hardware/flash.kicad_sch',
-    '../hardware/usb.kicad_sch'
-    
+  var sheetNames = [
+    'LBD.kicad_sch',
+    'power.kicad_sch',
+    'flash.kicad_sch',
+    'usb.kicad_sch'
   ];
+  var prefix = '../hardware/';
+  var sheets = sheetNames.map(function(n) { return prefix + n; });
   var idx = 0;
 
   var container = embed.parentNode;
 
-  rebuildEmbed(0);
+  function tryPrefix(p, cb) {
+    var test = p + sheetNames[0];
+    fetch(test, { method: 'HEAD' })
+      .then(function(res) {
+        if (res.ok) {
+          prefix = p;
+          sheets = sheetNames.map(function(n) { return prefix + n; });
+          cb(true);
+        } else {
+          cb(false);
+        }
+      })
+      .catch(function() { cb(false); });
+  }
+
+  function showViewer() {
+    ph.style.display = 'none';
+    viewer.style.display = 'flex';
+    rebuildEmbed(0);
+    label.textContent = '1/' + sheets.length + ' \u00b7 ' + sheetNames[0];
+  }
+
+  // comment out the contents of this array to test the placeholder
+  tryPrefix('./hardware/', function(ok) {
+    if (!ok) {
+      tryPrefix('../hardware/', function(ok2) {
+        if (ok2) showViewer();
+      });
+    } else {
+      showViewer();
+    }
+  });
 
   function rebuildEmbed(i) {
     var el = document.createElement('kicanvas-embed');
@@ -82,17 +112,8 @@ document.querySelectorAll('.panel-tab').forEach(btn => {
     if (i < 0 || i >= sheets.length) return;
     idx = i;
     rebuildEmbed(i);
-    label.textContent = (i + 1) + '/' + sheets.length + ' \u00b7 ' + sheets[i].split('/').pop().split('\\').pop();
+    label.textContent = (i + 1) + '/' + sheets.length + ' \u00b7 ' + sheetNames[i];
   }
-
-  fetch(sheets[0], { method: 'HEAD' })
-    .then(function(res) {
-      if (res.ok) {
-        ph.style.display = 'none';
-        viewer.style.display = 'flex';
-      }
-    })
-    .catch(function() {});
 
   label.textContent = '1/' + sheets.length + ' \u00b7 ' + sheets[0].split('/').pop().split('\\').pop();
 

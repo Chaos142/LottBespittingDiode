@@ -167,7 +167,7 @@ http://localhost:8080
 
 This project—including all software, firmware, schematics, PCB layouts, and documentation—is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
 
-Copyright (c) 2026 Joshua Felder (Chaos). All Rights Reserved.
+Copyright (c) 2026 Josh Felder (Chaos). All Rights Reserved.
 
 ### Core Terms:
 *   **Open Access & Freedom:** Anyone is free to run, study, modify, and distribute this software and hardware design documentation.
