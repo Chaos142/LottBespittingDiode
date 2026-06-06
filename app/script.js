@@ -1052,7 +1052,7 @@ function renderLibraryOverview(el) {
 
   const right = document.createElement('div');
   right.className = 'library-browser-right';
-  right.innerHTML = `<button class="btn btn-sm btn-ghost" onclick="collapseLibraryPaneFolders()"><i class="ti ti-folders"></i> Close All</button>`;
+  right.innerHTML = `<button class="btn btn-sm btn-ghost" onclick="collapseLibraryPaneFolders()"><i class="ti ti-home"></i> Root</button>`;
   toolbar.appendChild(right);
   el.appendChild(toolbar);
 
@@ -1231,6 +1231,7 @@ function renderRemoteView(el, remote) {
   hdr.innerHTML = `
     <div class="remote-view-left">
       <button class="btn btn-sm btn-ghost" onclick="closeRemoteView(event)"><i class="ti ti-arrow-left"></i> Back</button>
+      <button class="btn btn-sm btn-ghost" onclick="jumpToLibraryFolder(null)"><i class="ti ti-home"></i> Root</button>
       <span class="remote-view-title" title="${escAttr(remote.name)}"><i class="ti ti-device-remote" style="vertical-align:-2px;"></i><span class="remote-view-title-text">${escHtml(remote.name)}</span></span>
     </div>
     <div class="remote-view-actions">
@@ -1243,7 +1244,11 @@ function renderRemoteView(el, remote) {
   const addPlaceholder = document.createElement('div');
   addPlaceholder.id = 'addBtnBoxWrap-' + remote.id;
   el.appendChild(addPlaceholder);
-  remote.buttons.forEach(btn => el.appendChild(buildSignalBox(btn, remote.id)));
+  const signalGrid = document.createElement('div');
+  signalGrid.className = 'signal-grid';
+  signalGrid.id = 'signalGrid-' + remote.id;
+  remote.buttons.forEach(btn => signalGrid.appendChild(buildSignalBox(btn, remote.id)));
+  if (remote.buttons.length) el.appendChild(signalGrid);
   if (!remote.buttons.length) {
     const emp = document.createElement('div');
     emp.className = 'empty-state'; emp.id = 'remote-empty-' + remote.id;
@@ -1261,11 +1266,14 @@ function buildSignalBox(btn, remoteId) {
   box.innerHTML = `
     <div class="signal-box-header">
       <span class="signal-box-name" id="sname-${btn.id}" title="${escAttr(btn.name)}">${escHtml(btn.name)}</span>
-      <button class="btn btn-ghost btn-sm btn-icon" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}" onclick="toggleFavoriteButton(${btn.id},${remoteId},event)" style="color:${isFav ? 'var(--accent)' : 'var(--text3)'}"><i class="ti ${isFav ? 'ti-star-filled' : 'ti-star'}"></i></button>
+      <span class="signal-chip addr"><i class="ti ti-map-pin" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.addr||'—')}</span>
+      <span class="signal-chip cmd"><i class="ti ti-terminal" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.cmd||'—')}</span>
+      ${btn.proto ? `<span class="signal-chip proto">${escHtml(btn.proto)}</span>` : ''}
+      <button class="btn btn-ghost btn-sm btn-icon" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}" onclick="toggleFavoriteButton(${btn.id},${remoteId},event)" style="color:${isFav ? 'var(--accent)' : 'var(--text3)'};margin-left:auto;"><i class="ti ${isFav ? 'ti-star-filled' : 'ti-star'}"></i></button>
       <button class="btn btn-ghost btn-sm btn-icon" title="Rename" onclick="toggleEditName(${btn.id},${remoteId})"><i class="ti ti-pencil"></i></button>
       <button class="btn btn-ghost btn-sm btn-icon" title="Delete" onclick="deleteButton(${btn.id},${remoteId})" style="color:var(--text3);" onmouseenter="this.style.color='var(--red)'" onmouseleave="this.style.color='var(--text3)'"><i class="ti ti-trash"></i></button>
     </div>
-    <div id="sname-edit-${btn.id}" style="display:none;margin-bottom:8px;">
+    <div id="sname-edit-${btn.id}" style="display:none;margin-bottom:6px;">
       <div style="display:flex;gap:6px;align-items:center;">
         <input type="text" id="sname-inp-${btn.id}" maxlength="24" value="${escAttr(btn.name)}" style="width:200px;" oninput="validateSigName(${btn.id})" onkeydown="if(event.key==='Enter')confirmEditName(${btn.id},${remoteId})">
         <button class="btn btn-green btn-sm" onclick="confirmEditName(${btn.id},${remoteId})"><i class="ti ti-check"></i></button>
@@ -1273,15 +1281,10 @@ function buildSignalBox(btn, remoteId) {
       </div>
       <div class="field-err" id="sname-err-${btn.id}"></div>
     </div>
-    <div class="signal-meta">
-      <span class="signal-chip addr"><i class="ti ti-map-pin" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.addr||'—')}</span>
-      <span class="signal-chip cmd"><i class="ti ti-terminal" style="font-size:9px;vertical-align:-1px;"></i> ${escHtml(btn.cmd||'—')}</span>
-      ${btn.proto ? `<span class="signal-chip proto">${escHtml(btn.proto)}</span>` : ''}
-    </div>
     <div id="sdesc-view-${btn.id}" class="signal-desc-view" onclick="toggleEditDesc(${btn.id},${remoteId})" title="Click to edit description">
       ${btn.desc ? escHtml(btn.desc) : '<span style="color:var(--text3);font-style:italic;">Add description...</span>'}
     </div>
-    <div id="sdesc-edit-${btn.id}" style="display:none;margin-bottom:8px;">
+    <div id="sdesc-edit-${btn.id}" style="display:none;margin-bottom:6px;">
       <textarea id="sdesc-inp-${btn.id}" placeholder="Describe what this button does...">${escHtml(btn.desc||'')}</textarea>
       <div style="display:flex;gap:6px;margin-top:6px;">
         <button class="btn btn-green btn-sm" onclick="confirmEditDesc(${btn.id},${remoteId})"><i class="ti ti-check"></i> Save</button>
@@ -1354,7 +1357,9 @@ function confirmAddButton(remoteId) {
   saveLib();
   document.getElementById('remote-empty-'+remoteId)?.remove();
   document.getElementById('addBtnBoxWrap-'+remoteId).innerHTML = '';
-  document.getElementById('libraryContent').appendChild(buildSignalBox(newBtn, remoteId));
+  const grid = document.getElementById('signalGrid-'+remoteId);
+  if (grid) grid.appendChild(buildSignalBox(newBtn, remoteId));
+  else document.getElementById('libraryContent').appendChild(buildSignalBox(newBtn, remoteId));
   appendLog(`Added "${name}" to "${remote.name}".`, 'sys');
 }
 
@@ -1869,3 +1874,33 @@ document.getElementById('btnIrdbFolderCancel').addEventListener('click', closeIr
 document.getElementById('irdbFolderImportBtn').addEventListener('click', confirmIRDBFolderImport);
 document.getElementById('btnIrdbRemoteCancel').addEventListener('click', closeIrdbRemoteModal);
 document.getElementById('irdbRemoteImportBtn').addEventListener('click', confirmIRDBRemoteImport);
+
+// ===== SIDEBAR RESIZE =====
+(function() {
+  const sidebar = document.querySelector('.sidebar');
+  const handle = document.querySelector('.sidebar-resize-handle');
+  if (!sidebar || !handle) return;
+  const saved = localStorage.getItem('lbd_sidebar_width');
+  if (saved) sidebar.style.width = saved + 'px';
+  let startX, startW;
+  function onDown(e) {
+    startX = e.clientX;
+    startW = sidebar.offsetWidth;
+    handle.classList.add('active');
+    document.body.classList.add('sidebar-resizing');
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }
+  function onMove(e) {
+    const w = Math.min(600, Math.max(160, startW + e.clientX - startX));
+    sidebar.style.width = w + 'px';
+  }
+  function onUp() {
+    handle.classList.remove('active');
+    document.body.classList.remove('sidebar-resizing');
+    localStorage.setItem('lbd_sidebar_width', sidebar.offsetWidth);
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+  handle.addEventListener('mousedown', onDown);
+})();
