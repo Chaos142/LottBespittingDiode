@@ -434,27 +434,101 @@ function switchTab(tab) {
 }
 
 // ===== SAVE FORM =====
+let _saveSelectedRemoteId = null;
+let _saveSelectedFolderId = null;
+
 function toggleSaveForm() {
   const f = document.getElementById('saveForm');
   f.classList.toggle('open');
-  if (f.classList.contains('open')) { refreshRemoteSelect(); setTimeout(()=>document.getElementById('saveNameInput').focus(),50); }
+  if (f.classList.contains('open')) {
+    _saveSelectedRemoteId = null;
+    _saveSelectedFolderId = null;
+    renderSaveTree();
+    document.getElementById('saveNewRemoteNameWrap').classList.add('pane-hidden');
+    setTimeout(() => document.getElementById('saveNameInput').focus(), 50);
+  }
 }
-function refreshRemoteSelect() {
-  const sel = document.getElementById('saveRemoteSelect');
-  sel.innerHTML = '<option value="__new__">+ Create new remote...</option>';
-  library.filter(x => x.type==='remote').forEach(r => {
-    const opt = document.createElement('option');
-    opt.value = r.id;
-    opt.textContent = r.name + (r.folderId ? ' ('+getFolderPath(r.folderId)+')' : ' (Root)');
-    sel.appendChild(opt);
+
+function renderSaveTree() {
+  const container = document.getElementById('saveDestTree');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const rootRow = document.createElement('div');
+  const rootSelected = _saveSelectedFolderId == null && _saveSelectedRemoteId == null;
+  rootRow.className = 'folder-picker-row' + (rootSelected ? ' selected' : '');
+  rootRow.innerHTML = '<i class="ti ti-home"></i><span class="folder-picker-label">/ Root</span><span style="color:var(--text3);font-size:10px;margin-left:auto;">new remote</span>';
+  rootRow.onclick = function() {
+    _saveSelectedFolderId = null;
+    _saveSelectedRemoteId = null;
+    renderSaveTree();
+    document.getElementById('saveNewRemoteNameWrap').classList.remove('pane-hidden');
+  };
+  container.appendChild(rootRow);
+
+  var folders = library.filter(function(x) { return x.type === 'folder'; });
+  var folderMap = {};
+  folders.forEach(function(f) { folderMap[f.id] = f; });
+
+  var getChildren = function(parentId) {
+    return folders.filter(function(f) { return f.parentId === parentId; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+  };
+  var getRemotes = function(folderId) {
+    return library.filter(function(x) { return x.type === 'remote' && x.folderId === folderId; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+  };
+
+  function renderLevel(parentId, depth) {
+    getChildren(parentId).forEach(function(folder) {
+      var row = document.createElement('div');
+      var isSelected = _saveSelectedFolderId === folder.id;
+      row.className = 'folder-picker-row' + (isSelected ? ' selected' : '');
+      row.style.paddingLeft = (8 + depth * 14) + 'px';
+      row.innerHTML = '<i class="ti ti-point" style="font-size:10px;width:12px;visibility:hidden;"></i><i class="ti ti-folder"></i><span class="folder-picker-label">' + escHtml(folder.name) + '</span><span style="color:var(--text3);font-size:10px;margin-left:auto;">new remote</span>';
+      row.onclick = function() {
+        _saveSelectedFolderId = folder.id;
+        _saveSelectedRemoteId = null;
+        renderSaveTree();
+        document.getElementById('saveNewRemoteNameWrap').classList.remove('pane-hidden');
+      };
+      container.appendChild(row);
+
+      getRemotes(folder.id).forEach(function(remote) {
+        var rRow = document.createElement('div');
+        var rSelected = _saveSelectedRemoteId === remote.id;
+        rRow.className = 'folder-picker-row' + (rSelected ? ' selected' : '');
+        rRow.style.paddingLeft = (8 + (depth + 1) * 14) + 'px';
+        rRow.innerHTML = '<i class="ti ti-device-remote" style="font-size:12px;"></i><span class="folder-picker-label">' + escHtml(remote.name) + '</span><span style="color:var(--accent);font-size:10px;margin-left:auto;">' + remote.buttons.length + ' btn' + (remote.buttons.length !== 1 ? 's' : '') + '</span>';
+        rRow.onclick = function() {
+          _saveSelectedRemoteId = remote.id;
+          _saveSelectedFolderId = null;
+          renderSaveTree();
+          document.getElementById('saveNewRemoteNameWrap').classList.add('pane-hidden');
+        };
+        container.appendChild(rRow);
+      });
+
+      renderLevel(folder.id, depth + 1);
+    });
+  }
+
+  renderLevel(null, 1);
+
+  getRemotes(null).forEach(function(remote) {
+    var rRow = document.createElement('div');
+    var rSelected = _saveSelectedRemoteId === remote.id;
+    rRow.className = 'folder-picker-row' + (rSelected ? ' selected' : '');
+    rRow.style.paddingLeft = (8 + 1 * 14) + 'px';
+    rRow.innerHTML = '<i class="ti ti-device-remote" style="font-size:12px;"></i><span class="folder-picker-label">' + escHtml(remote.name) + '</span><span style="color:var(--accent);font-size:10px;margin-left:auto;">' + remote.buttons.length + ' btn' + (remote.buttons.length !== 1 ? 's' : '') + '</span>';
+    rRow.onclick = function() {
+      _saveSelectedRemoteId = remote.id;
+      _saveSelectedFolderId = null;
+      renderSaveTree();
+      document.getElementById('saveNewRemoteNameWrap').classList.add('pane-hidden');
+    };
+    container.appendChild(rRow);
   });
-  onSaveRemoteChange();
 }
-function onSaveRemoteChange() {
-  const v = document.getElementById('saveRemoteSelect').value;
-  document.getElementById('saveNewRemoteFields').classList.toggle('pane-hidden', v !== '__new__');
-  if (v==='__new__') refreshFolderSelect('saveNewRemoteFolderSelect');
-}
+
 function validateSaveFormName() {
   const v = document.getElementById('saveNameInput').value.trim();
   document.getElementById('saveNameErr').textContent = v ? '' : 'Name is required';
@@ -472,16 +546,15 @@ function saveManualSignal() {
   if (!validateHex(addr)||!validateHex(cmd)) { appendLog('Fix hex inputs first.','err'); return; }
   const name = limitName(document.getElementById('saveNameInput').value, 'button');
   const desc = document.getElementById('saveDescInput').value.trim();
-  const remSel = document.getElementById('saveRemoteSelect').value;
   let remote;
-  if (remSel === '__new__') {
+  if (_saveSelectedRemoteId != null) {
+    remote = library.find(r => r.id===_saveSelectedRemoteId);
+    if (!remote) { appendLog('Selected remote not found.','err'); return; }
+  } else {
     if (!validateSaveRemoteName()) return;
     const rname = limitName(document.getElementById('saveNewRemoteName').value, 'remote');
-    const fid = document.getElementById('saveNewRemoteFolderSelect').value || null;
-    remote = { type:'remote', id:genId(), name:rname, folderId: fid ? parseInt(fid) : null, buttons:[], favorite:false };
+    remote = { type:'remote', id:genId(), name:rname, folderId: _saveSelectedFolderId, buttons:[], favorite:false };
     library.push(remote);
-  } else {
-    remote = library.find(r => r.id===parseInt(remSel));
   }
   remote.buttons.push({ id:genId(), name, addr, cmd, desc, proto:'NEC', favorite:false });
   saveLib(); renderSidebarTree();
@@ -1439,16 +1512,6 @@ function confirmClearLibrary() {
   appendLog('Library cleared.', 'sys');
 }
 
-function refreshFolderSelect(selId) {
-  const sel = document.getElementById(selId);
-  if (!sel) return;
-  sel.innerHTML = '<option value="">/ Root</option>';
-  library.filter(x=>x.type==='folder').forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f.id; opt.textContent = getFolderPath(f.id);
-    sel.appendChild(opt);
-  });
-}
 function getFolderPath(id) {
   const parts=[]; let cur=library.find(x=>x.id===id);
   while(cur) { parts.unshift(cur.name); cur=cur.parentId?library.find(x=>x.id===cur.parentId):null; }
@@ -1783,7 +1846,6 @@ document.getElementById('commandInput').addEventListener('input', function() { o
 document.getElementById('transmitBtn').addEventListener('click', transmitPayload);
 document.getElementById('btnToggleSave').addEventListener('click', toggleSaveForm);
 document.getElementById('saveNameInput').addEventListener('input', validateSaveFormName);
-document.getElementById('saveRemoteSelect').addEventListener('change', onSaveRemoteChange);
 document.getElementById('saveNewRemoteName').addEventListener('input', validateSaveRemoteName);
 document.getElementById('btnSaveManual').addEventListener('click', saveManualSignal);
 document.getElementById('btnCancelSave').addEventListener('click', toggleSaveForm);

@@ -136,19 +136,13 @@
             </div>
             <div class="field-group">
               <label class="field-label">Save to Remote</label>
-              <select id="saveRemoteSelect">
-                <option value="__new__">+ Create new remote...</option>
-              </select>
+              <div id="saveDestTree" class="folder-picker-tree" style="max-height:200px;"></div>
             </div>
-            <div id="saveNewRemoteFields" class="pane-hidden">
-              <div class="field-group">
-                <label class="field-label">Remote Name</label>
+            <div id="saveNewRemoteNameWrap" class="pane-hidden">
+              <div class="field-group" style="margin-bottom:0;">
+                <label class="field-label">New Remote Name</label>
                 <input type="text" id="saveNewRemoteName" maxlength="32" placeholder="e.g. Samsung TV">
                 <div class="field-err" id="saveNewRemoteNameErr"></div>
-              </div>
-              <div class="field-group">
-                <label class="field-label">Folder (optional)</label>
-                <select id="saveNewRemoteFolderSelect"><option value="">/ Root</option></select>
               </div>
             </div>
             <div class="save-form-actions">
