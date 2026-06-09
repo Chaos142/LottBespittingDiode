@@ -15,15 +15,17 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <button class="sidebar-toggle btn btn-ghost btn-icon" id="sidebarToggle" title="Toggle sidebar"><i class="ti ti-menu-2"></i></button>
   <div class="logo"><div class="logo-dot"></div>LBD</div>
   <div class="topbar-sep"></div>
-  <a class="btn btn-ghost topbar-home" href="index.html"><i class="ti ti-home"></i> Home</a>
+  <a class="btn btn-ghost topbar-home" href="index.html"><i class="ti ti-home"></i> <span>Home</span></a>
   <button id="connectBtn">Connect</button>
   <span id="deviceName" class="device-name"></span>
   <div class="topbar-right">
     <span id="statusBadge" class="badge">Disconnected</span>
   </div>
 </div>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
 
 <div class="main">
 
@@ -277,6 +279,18 @@
     <div class="modal-actions">
       <button class="btn" id="btnIrdbRemoteCancel">Cancel</button>
       <button class="btn btn-accent" id="irdbRemoteImportBtn"><i class="ti ti-download"></i> Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: WebSerial unsupported -->
+<div class="modal-overlay" id="webserialModal">
+  <div class="modal">
+    <div class="modal-title"><i class="ti ti-alert-triangle text-red"></i>WebSerial Not Supported</div>
+    <p class="modal-msg-lg">Your browser does not support the Web Serial API.</p>
+    <p class="modal-msg-lg" style="margin-top:0;">This controller requires a Chromium-based browser (Chrome, Edge, Opera, etc.) to communicate with the USB device.</p>
+    <div class="modal-actions">
+      <button class="btn" id="btnWebserialOk">OK</button>
     </div>
   </div>
 </div>
