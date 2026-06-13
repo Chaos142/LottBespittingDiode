@@ -40,7 +40,7 @@ hardware/             # KiCad hardware design
   power.kicad_sch     # Power regulation (TPSM828214SILR)
   flash.kicad_sch     # External flash (W25Q128)
   usb.kicad_sch       # USB-C (USB4155)
-  prototype.kicad_sch # Breadboard/perfboard prototype variant
+  prototype/prototype.kicad_sch # Breadboard/perfboard prototype variant
   LBD.kicad_pcb       # PCB layout
 
 scripts/              # Utility scripts

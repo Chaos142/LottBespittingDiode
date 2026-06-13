@@ -3,6 +3,8 @@
     "3dviewports": [],
     "design_settings": {
       "defaults": {
+        "apply_defaults_to_fp_barcodes": false,
+        "apply_defaults_to_fp_dimensions": false,
         "apply_defaults_to_fp_fields": false,
         "apply_defaults_to_fp_shapes": false,
         "apply_defaults_to_fp_text": false,
@@ -71,6 +73,7 @@
         "extra_footprint": "warning",
         "footprint": "error",
         "footprint_filters_mismatch": "ignore",
+        "footprint_symbol_field_mismatch": "warning",
         "footprint_symbol_mismatch": "warning",
         "footprint_type_mismatch": "ignore",
         "hole_clearance": "error",
@@ -88,6 +91,7 @@
         "mirrored_text_on_front_layer": "warning",
         "missing_courtyard": "ignore",
         "missing_footprint": "warning",
+        "missing_tuning_profile": "warning",
         "net_conflict": "warning",
         "nonmirrored_text_on_back_layer": "warning",
         "npth_inside_courtyard": "ignore",
@@ -107,9 +111,12 @@
         "too_many_vias": "error",
         "track_angle": "error",
         "track_dangling": "warning",
+        "track_not_centered_on_via": "ignore",
+        "track_on_post_machined_layer": "error",
         "track_segment_length": "error",
         "track_width": "error",
         "tracks_crossing": "error",
+        "tuning_profile_track_geometries": "ignore",
         "unconnected_items": "error",
         "unresolved_variable": "error",
         "via_dangling": "warning",
@@ -644,14 +651,9 @@
         "filename": "LBD.kicad_sch",
         "name": "LBD",
         "uuid": "02a771dc-3dd8-4911-bfb9-5380c79ee9e9"
-      },
-      {
-        "filename": "prototype.kicad_sch",
-        "name": "Prototype",
-        "uuid": "79b525c5-f9c9-456f-9ae1-5cb9eb4f2523"
       }
     ],
-    "used_designators": "U2,D1,#PWR5-6,#PWR12-13,R1-2,Q1",
+    "used_designators": "D1-7",
     "variants": []
   },
   "sheets": [
@@ -670,10 +672,6 @@
     [
       "0c2041eb-daed-4eed-ade6-f8635714311d",
       "Flash"
-    ],
-    [
-      "79b525c5-f9c9-456f-9ae1-5cb9eb4f2523",
-      "Prototype"
     ]
   ],
   "text_variables": {},

@@ -2040,7 +2040,7 @@
 				)
 			)
 		)
-		(property "Footprint" "USB4155-03-C_REVA:GCT_USB4155-03-C_REVA"
+		(property "Footprint" "LBD_Footprints:GCT_USB4155-03-C_REVA"
 			(at 137.16 88.9 0)
 			(hide yes)
 			(show_name no)
