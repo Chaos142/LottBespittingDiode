@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lott-Bespitting Diode</title>
+<script type="module" src="https://kicanvas.org/kicanvas/kicanvas.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+<link rel="stylesheet" href="index.css" />
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div id="hero-three-bg"></div>
+
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-eyebrow">RP2040 · NEC Protocol · WebSerial · 38kHz</div>
+      <h1 class="hero-title">
+        <span>LBD</span><br>
+        Lott-<br>Bespitting<br>Diode
+      </h1>
+      <p class="hero-sub">
+        A high-intensity IR blaster built on the RP2040.<br>
+        Browser-native control. MOSFET-driven. Zero compromise.
+      </p>
+      <div class="hero-cta">
+        <a href="controller.html" class="btn btn-primary">→ Launch Controller</a>
+        <a href="#architecture" class="btn btn-ghost">↓ System Docs</a>
+      </div>
+      <div class="hero-github">
+        <a href="https://github.com/chaowoses/LottBespittingDiode" target="_blank" rel="noopener">
+          <i class="ti ti-brand-github" aria-hidden="true"></i>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <div class="panel-tabs">
+        <button class="panel-tab active" data-tab="bom">BOM</button>
+        <button class="panel-tab" data-tab="schematic">Schematic</button>
+        <button class="panel-tab" data-tab="pcb">PCB 3D</button>
+      </div>
+      <div class="panel-content">
+        <div id="tab-bom" class="tab-content active">
+          <div class="tab-body">
+            <table class="bom-table">
+              <tr><th>Ref</th><th>Value</th><th>Qty</th></tr>
+              <tr><td class="bom-ref">C4, C5</td><td class="bom-val">15pF</td><td>2</td></tr>
+              <tr><td class="bom-ref">C6–C13, C17, C18</td><td class="bom-val">100n</td><td>10</td></tr>
+              <tr><td class="bom-ref">C14</td><td class="bom-val">4.7uF</td><td>1</td></tr>
+              <tr><td class="bom-ref">C15</td><td class="bom-val">22uF</td><td>1</td></tr>
+              <tr><td class="bom-ref">C16</td><td class="bom-val">100nF</td><td>1</td></tr>
+              <tr><td class="bom-ref">C19, C20</td><td class="bom-val">1u</td><td>2</td></tr>
+              <tr><td class="bom-ref">D1–D7</td><td class="bom-val">LED</td><td>7</td></tr>
+              <tr><td class="bom-ref">J1</td><td class="bom-val">Conn_01x03_Pin</td><td>1</td></tr>
+              <tr><td class="bom-ref">J2</td><td class="bom-val">USB4155-03-C_REVA</td><td>1</td></tr>
+              <tr><td class="bom-ref">R3, R13</td><td class="bom-val">5.1k</td><td>2</td></tr>
+              <tr><td class="bom-ref">R6</td><td class="bom-val">1k (0603)</td><td>1</td></tr>
+              <tr><td class="bom-ref">R7</td><td class="bom-val">1k</td><td>1</td></tr>
+              <tr><td class="bom-ref">R9</td><td class="bom-val">10k</td><td>1</td></tr>
+              <tr><td class="bom-ref">R10</td><td class="bom-val">100k</td><td>1</td></tr>
+              <tr><td class="bom-ref">R11, R12</td><td class="bom-val">22</td><td>2</td></tr>
+              <tr><td class="bom-ref">SW2</td><td class="bom-val">BOOTSEL</td><td>1</td></tr>
+              <tr><td class="bom-ref">U1</td><td class="bom-val">RP2040</td><td>1</td></tr>
+              <tr><td class="bom-ref">U4</td><td class="bom-val">TPSM828214SILR</td><td>1</td></tr>
+              <tr><td class="bom-ref">U5</td><td class="bom-val">W25Q128JVSIQ</td><td>1</td></tr>
+              <tr><td class="bom-ref">Y1</td><td class="bom-val">12 MHz</td><td>1</td></tr>
+            </table>
+          </div>
+        </div>
+        <div id="tab-schematic" class="tab-content">
+          <div id="sch-placeholder" class="tab-placeholder">
+            <i class="ti ti-files-off"></i>
+            <div>Schematic</div>
+            <div class="hint">Schematic files are currently unavailable.</div>
+          </div>
+          <div id="sch-viewer" style="display:none;flex-direction:column;height:100%;">
+            <div class="sch-toolbar">
+              <button id="sch-prev" class="sch-btn"><i class="ti ti-chevron-left"></i></button>
+              <span id="sch-current" class="sch-current">LBD.kicad_sch</span>
+              <button id="sch-next" class="sch-btn"><i class="ti ti-chevron-right"></i></button>
+            </div>
+            <div style="flex:1;min-height:0;">
+              <kicanvas-embed id="kicanvas-embed" src="../hardware/LBD.kicad_sch" controls="basic" controlslist="nooverlay"></kicanvas-embed>
+            </div>
+          </div>
+        </div>
+        <div id="tab-pcb" class="tab-content">
+          <div class="tab-placeholder">
+            <i class="ti ti-cube"></i>
+            <div>PCB 3D Model</div>
+            <div class="hint">Coming soon...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<!-- ══ TICKER ══ -->
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker">
+    <span class="ticker-item"><span>◈</span> 38kHz Carrier Modulation</span>
+    <span class="ticker-item"><span>◈</span> NEC Protocol Engine</span>
+    <span class="ticker-item"><span>◈</span> WebSerial USB CDC</span>
+    <span class="ticker-item"><span>◈</span> MOSFET Gate Controller</span>
+    <span class="ticker-item"><span>◈</span> CircuitPython Firmware</span>
+    <span class="ticker-item"><span>◈</span> Flipper-IRDB Compatible</span>
+    <span class="ticker-item"><span>◈</span> GPL-3.0 Open Source</span>
+    <span class="ticker-item"><span>◈</span> High-Intensity IR Matrix</span>
+    <span class="ticker-item"><span>◈</span> 38kHz Carrier Modulation</span>
+    <span class="ticker-item"><span>◈</span> NEC Protocol Engine</span>
+    <span class="ticker-item"><span>◈</span> WebSerial USB CDC</span>
+    <span class="ticker-item"><span>◈</span> MOSFET Gate Controller</span>
+    <span class="ticker-item"><span>◈</span> CircuitPython Firmware</span>
+    <span class="ticker-item"><span>◈</span> Flipper-IRDB Compatible</span>
+    <span class="ticker-item"><span>◈</span> GPL-3.0 Open Source</span>
+    <span class="ticker-item"><span>◈</span> High-Intensity IR Matrix</span>
+  </div>
+</div>
+
+<!-- ══ ARCHITECTURE ══ -->
+<section id="architecture">
+  <div class="section-label reveal">01 — System Architecture</div>
+  <h2 class="section-title reveal">Two Halves.<br>One Signal.</h2>
+
+  <div class="arch-diagram reveal">
+    <div class="arch-box reveal-left">
+      <div class="arch-box-title">Web Control Interface</div>
+      <div class="arch-item">Flipper-IRDB Directory</div>
+      <div class="arch-item">Raw Hex Compiler</div>
+      <div class="arch-item">WebSerial Pipeline</div>
+      <div class="arch-item">HTML5 / CSS3 / JS</div>
+    </div>
+    <div class="arch-arrow reveal">
+      <div class="arch-arrow-line"></div>
+      USB<br>CDC
+    </div>
+    <div class="arch-box reveal-right">
+      <div class="arch-box-title">LBD Hardware Core</div>
+      <div class="arch-item">NEC Protocol Engine</div>
+      <div class="arch-item">MOSFET Gate Controller</div>
+      <div class="arch-item">38kHz PWM Modulator</div>
+      <div class="arch-item">RP2040 / CircuitPython</div>
+    </div>
+  </div>
+
+  <div class="arch-bottom reveal" style="transition-delay:.3s">
+    <div class="ir-matrix-label">↓ High-Intensity IR Matrix</div>
+    <div class="ir-leds">
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+      <div class="ir-led"></div><div class="ir-led"></div><div class="ir-led"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section id="features">
+  <div class="section-label reveal">02 — Core Features</div>
+  <h2 class="section-title reveal">Built Without<br>Compromise.</h2>
+
+  <div class="features-grid reveal">
+    <div class="feature-card">
+      <i class="ti ti-antenna feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">NEC Protocol Synthesis</div>
+      <p class="feature-desc">Encodes raw hex address/command pairs into precise pulse-distance sequences compatible with any NEC IR receiver.</p>
+      <div class="feature-num">F.01</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-wave-sine feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">38kHz Carrier Modulation</div>
+      <p class="feature-desc">Hardware-accurate duty cycle generation passes standard consumer IR receiver filters every time — no flicker, no misses.</p>
+      <div class="feature-num">F.02</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-plug-connected feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">WebSerial Pipeline</div>
+      <p class="feature-desc">Control the device entirely from a browser over USB CDC. No drivers. No apps. Just a data-capable cable.</p>
+      <div class="feature-num">F.03</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-bolt feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">MOSFET Gate Driver</div>
+      <p class="feature-desc">High-side MOSFET switching delivers far more output current than GPIO-alone designs, driving a full IR LED array.</p>
+      <div class="feature-num">F.04</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-database feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">Flipper-IRDB Compatible</div>
+      <p class="feature-desc">Browse and transmit signals directly from the Flipper Zero IR database — the largest open-source IR signal library.</p>
+      <div class="feature-num">F.05</div>
+    </div>
+    <div class="feature-card">
+      <i class="ti ti-lock-open feature-icon" aria-hidden="true"></i>
+      <div class="feature-name">GPL-3.0 Open Source</div>
+      <p class="feature-desc">Firmware, schematics, PCB layouts and software — all fully open. Study it. Fork it. Build on it.</p>
+      <div class="feature-num">F.06</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROTOCOL ══ -->
+<section id="protocol">
+  <div class="section-label reveal">03 — Firmware</div>
+  <h2 class="section-title reveal">The Signal,<br>Dissected.</h2>
+
+  <div class="protocol-vis reveal">
+    <div class="proto-row">
+      <div class="proto-label">Preamble</div>
+      <div class="proto-bar-wrap" style="--w:90%"><div class="proto-bar"></div></div>
+      <div class="proto-val">9000μs mark</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Space</div>
+      <div class="proto-bar-wrap" style="--w:50%"><div class="proto-bar" style="background:linear-gradient(90deg,var(--amber),var(--amber-dim))"></div></div>
+      <div class="proto-val">4500μs space</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Bit HIGH</div>
+      <div class="proto-bar-wrap" style="--w:18%"><div class="proto-bar"></div></div>
+      <div class="proto-val">560μs + 1690μs</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Bit LOW</div>
+      <div class="proto-bar-wrap" style="--w:8%"><div class="proto-bar" style="background:linear-gradient(90deg,var(--amber),var(--amber-dim))"></div></div>
+      <div class="proto-val">560μs + 560μs</div>
+    </div>
+    <div class="proto-row">
+      <div class="proto-label">Stop</div>
+      <div class="proto-bar-wrap" style="--w:4%"><div class="proto-bar"></div></div>
+      <div class="proto-val">560μs mark</div>
+    </div>
+  </div>
+
+  <div class="waveform-wrap reveal">
+    <div class="waveform-label">NEC Pulse Train — <span>38kHz modulated carrier</span></div>
+    <svg class="waveform-svg" viewBox="0 0 900 80" preserveAspectRatio="none" height="80">
+      <defs>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect x="10"  y="20" width="120" height="30" fill="#c850ff" filter="url(#glow)" opacity=".9"/>
+      <rect x="190" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="210" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="230" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="270" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="290" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="330" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="350" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="390" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="410" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="450" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="470" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="510" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="550" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="590" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="630" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="670" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="710" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="750" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <rect x="800" y="20" width="8"  height="30" fill="#c850ff" filter="url(#glow)"/>
+      <line x1="0" y1="50" x2="900" y2="50" stroke="#222" stroke-width="1"/>
+      <rect id="scan" x="-4" y="0" width="4" height="80" fill="rgba(200,80,255,.3)">
+        <animate attributeName="x" from="-4" to="904" dur="3s" repeatCount="indefinite"/>
+      </rect>
+    </svg>
+  </div>
+
+  <div class="code-block reveal" style="margin-top:2rem">
+    <div class="code-c"># 38kHz carrier initialization — CircuitPython / RP2040</div>
+    <br>
+    <span class="code-k">import</span> <span class="code-n">time, board, pwmio</span>
+    <br><br>
+    <span class="code-n">ir_pwm</span> = <span class="code-n">pwmio</span>.<span class="code-n">PWMOut</span>(
+      <span class="code-n">board</span>.<span class="code-n">GP16</span>,
+      <span class="code-k">frequency</span>=<span class="code-v">38000</span>,
+      <span class="code-k">duty_cycle</span>=<span class="code-v">0</span>
+    )
+    <br><br>
+    <span class="code-k">def</span> <span class="code-n">pulse_nec</span>(<span class="code-n">mark_us</span>, <span class="code-n">space_us</span>):
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">ir_pwm</span>.<span class="code-n">duty_cycle</span> = <span class="code-v">32768</span>  <span class="code-c"># 50% — carrier ON</span>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">time</span>.<span class="code-n">sleep_us</span>(<span class="code-n">mark_us</span>)
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">ir_pwm</span>.<span class="code-n">duty_cycle</span> = <span class="code-v">0</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-c"># carrier OFF</span>
+    <br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-n">time</span>.<span class="code-n">sleep_us</span>(<span class="code-n">space_us</span>)
+  </div>
+</section>
+
+<!-- ══ SETUP ══ -->
+<section id="setup">
+  <div class="section-label reveal">04 — Setup</div>
+  <h2 class="section-title reveal">Flash it.<br>Launch it.</h2>
+
+  <div class="reveal" style="margin-bottom:2rem;font-family:'Share Tech Mono',monospace;font-size:.8rem;color:var(--muted);line-height:1.7;border:1px solid var(--ir-dim);padding:1rem;background:rgba(200,80,255,.03)">
+    <span class="step-tag" style="margin-bottom:.6rem">Prototype</span><br>
+    The embedded PCB isn't finalized yet — build the prototype on a breadboard or perfboard using the schematic <a href="https://github.com/chaowoses/LottBespittingDiode/tree/main/hardware/prototype/prototype.kicad_sch" target="_blank" rel="noopener" style="color:var(--ir);text-decoration:none">in the repo</a>. Flash the RP2040-Zero with the CircuitPython firmware, plug it into your computer via USB, and open the <a href="controller.html" style="color:var(--ir);text-decoration:none">web controller</a>.
+  </div>
+
+  <div class="setup-steps">
+    <div class="setup-col-header">DIY / Prototype Only</div>
+    <div class="setup-col-header">All Builds</div>
+    <div class="step reveal">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>Enter Bootloader Mode</h3>
+        <p>Hold the BOOT button on the RP2040 board and connect via a data-capable USB cable. Release once the drive mounts.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>Install CircuitPython</h3>
+        <p>The board mounts as <code style="color:var(--ir)">RPI-RP2</code>. Drop the CircuitPython .uf2 onto its root. It reboots as <code style="color:var(--ir)">CIRCUITPY</code>.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>Deploy Firmware</h3>
+        <p>Copy <code style="color:var(--ir)">code.py</code> and <code style="color:var(--ir)">lib/</code> from <code>/firmware</code> onto the CIRCUITPY volume root.</p>
+      </div>
+    </div>
+    <div class="step reveal">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>Plug It In & Open the Controller</h3>
+        <p>Connect the device to your computer via USB, then open the <a href="controller.html" style="color:var(--ir);text-decoration:none">web controller</a> in a Chromium-based browser. Click <strong>Connect</strong> to establish the WebSerial session.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ WARNING ══ -->
+<section id="warning">
+  <div class="warning-inner reveal">
+    <div class="warning-icon">
+      <i class="ti ti-alert-triangle" aria-hidden="true"></i>
+    </div>
+    <div class="warning-text">
+      <h3>Strictly Prohibited for Illegal Use</h3>
+      <p>
+        This project is designed solely for personal engineering research, hardware prototyping, and authorized testing.
+        Only operate this device on equipment you personally own or have explicit permission to control.
+        The creator assumes no liability for misuse, property disruption, or equipment damage.
+        By using this project you take full responsibility for your actions.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══ -->
+<section style="text-align:center; padding: 8rem 10vw;">
+  <div class="section-label reveal" style="justify-content:center">Ready</div>
+  <h2 class="section-title reveal" style="font-size:clamp(3rem,9vw,8rem)">Transmit.</h2>
+  <p class="reveal" style="font-family:'Share Tech Mono',monospace;color:var(--muted);margin:1rem auto 3rem;max-width:400px;font-size:.85rem;line-height:1.8">
+    Open the controller, connect your hardware, and start sending signals.
+  </p>
+  <a href="controller.html" class="btn btn-primary reveal" style="font-size:1rem;padding:1.2rem 3.5rem;">
+    → Open Controller
+  </a>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-logo">LBD</div>
+  <div class="footer-meta">
+    Copyright © 2026 Josh Felder (Chaos) · <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank">GPL-3.0 License</a><br>
+    <span id="disclaimer">Named for Mrs. Lott. No Spanish teachers were harmed in the making of this project.</span>
+  </div>
+  <a href="https://github.com/chaowoses/LottBespittingDiode" target="_blank" rel="noopener" class="footer-github">
+    <i class="ti ti-brand-github" aria-hidden="true"></i>
+    GitHub
+  </a>
+</footer>
+
+<script src="index.js"></script>
+
+<script type="module" src="three-scene.js"></script>
+</body>
+</html>
